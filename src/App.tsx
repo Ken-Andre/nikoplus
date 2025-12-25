@@ -14,6 +14,7 @@ import NouvelleVente from "./pages/vendeur/NouvelleVente";
 import HistoriqueVentes from "./pages/vendeur/HistoriqueVentes";
 import VenteDetails from "./pages/vendeur/VenteDetails";
 import ConsultationStocks from "./pages/vendeur/ConsultationStocks";
+import TicketCaisse from "./pages/vendeur/TicketCaisse";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -112,6 +113,9 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
+
+      {/* Ticket printing - public route for easy access */}
+      <Route path="/ticket/:id" element={<TicketCaisse />} />
 
       {/* Admin Routes - Placeholder */}
       <Route

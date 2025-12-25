@@ -29,6 +29,7 @@ export default function NouvelleVente() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
   const [amountReceived, setAmountReceived] = useState(0);
   const [saleReference, setSaleReference] = useState('');
+  const [saleId, setSaleId] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [isOfflineSale, setIsOfflineSale] = useState(false);
 
@@ -114,6 +115,7 @@ export default function NouvelleVente() {
         }
 
         setSaleReference(reference);
+        setSaleId(saleData.id);
         setIsOfflineSale(!isOnline);
         toast.success('Vente enregistrée avec succès !');
         
@@ -128,8 +130,9 @@ export default function NouvelleVente() {
   };
 
   const handlePrint = () => {
-    // Navigate to print page
-    window.open(`/ticket/${saleReference}`, '_blank');
+    if (saleId) {
+      navigate(`/ticket/${saleId}`);
+    }
   };
 
   const handleNewSale = () => {
@@ -140,6 +143,7 @@ export default function NouvelleVente() {
     setPaymentMethod('cash');
     setAmountReceived(0);
     setSaleReference('');
+    setSaleId(null);
     setIsOfflineSale(false);
   };
 
