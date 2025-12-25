@@ -2,25 +2,146 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Index from "./pages/Index";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { ConnectionProvider } from "@/hooks/useConnectionStatus";
+import { CartProvider } from "@/hooks/useCart";
+
+// Pages
+import AuthPage from "./pages/AuthPage";
+import VendeurAccueil from "./pages/vendeur/VendeurAccueil";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+}
+
+function AppRoutes() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="text-center">
+          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground font-display text-2xl font-bold">
+            N+
+          </div>
+          <div className="h-8 w-8 mx-auto animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Routes>
+      {/* Auth */}
+      <Route path="/login" element={user ? <Navigate to="/" replace /> : <AuthPage />} />
+      
+      {/* Default redirect based on role */}
+      <Route
+        path="/"
+        element={
+          <ProtectedRoute>
+            {user?.role === 'seller' ? (
+              <Navigate to="/vendeur/accueil" replace />
+            ) : (
+              <Navigate to="/admin/dashboard" replace />
+            )}
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Vendeur Routes */}
+      <Route
+        path="/vendeur/accueil"
+        element={
+          <ProtectedRoute>
+            <VendeurAccueil />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendeur/nouvelle-vente"
+        element={
+          <ProtectedRoute>
+            <VendeurAccueil />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendeur/historique-ventes"
+        element={
+          <ProtectedRoute>
+            <VendeurAccueil />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendeur/stocks"
+        element={
+          <ProtectedRoute>
+            <VendeurAccueil />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Admin Routes - Placeholder */}
+      <Route
+        path="/admin/*"
+        element={
+          <ProtectedRoute>
+            <VendeurAccueil />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Profile */}
+      <Route
+        path="/profil"
+        element={
+          <ProtectedRoute>
+            <VendeurAccueil />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* 404 */}
+      <Route path="*" element={<NotFound />} />
+    </Routes>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ConnectionProvider>
+      <AuthProvider>
+        <CartProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AppRoutes />
+            </BrowserRouter>
+          </TooltipProvider>
+        </CartProvider>
+      </AuthProvider>
+    </ConnectionProvider>
   </QueryClientProvider>
 );
 
