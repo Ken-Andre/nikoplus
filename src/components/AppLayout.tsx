@@ -8,9 +8,10 @@ import { Menu } from 'lucide-react';
 interface AppLayoutProps {
   children: ReactNode;
   title?: string;
+  backButton?: ReactNode;
 }
 
-export function AppLayout({ children, title }: AppLayoutProps) {
+export function AppLayout({ children, title, backButton }: AppLayoutProps) {
   const { user } = useAuth();
 
   return (
@@ -24,6 +25,7 @@ export function AppLayout({ children, title }: AppLayoutProps) {
               <SidebarTrigger className="lg:hidden">
                 <Menu className="h-5 w-5" />
               </SidebarTrigger>
+              {backButton}
               {title && (
                 <h1 className="text-lg font-semibold text-foreground md:text-xl">
                   {title}

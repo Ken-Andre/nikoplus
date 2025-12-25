@@ -10,6 +10,7 @@ import { CartProvider } from "@/hooks/useCart";
 // Pages
 import AuthPage from "./pages/AuthPage";
 import VendeurAccueil from "./pages/vendeur/VendeurAccueil";
+import NouvelleVente from "./pages/vendeur/NouvelleVente";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -80,7 +81,7 @@ function AppRoutes() {
         path="/vendeur/nouvelle-vente"
         element={
           <ProtectedRoute>
-            <VendeurAccueil />
+            <NouvelleVente />
           </ProtectedRoute>
         }
       />
