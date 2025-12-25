@@ -42,6 +42,7 @@ const sellerNavItems = [
 
 const adminNavItems = [
   { title: 'Tableau de Bord', url: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'Produits', url: '/manager/produits', icon: Package },
   { title: 'Ventes', url: '/admin/ventes', icon: ShoppingCart },
   { title: 'Stocks', url: '/admin/stocks', icon: Package },
   { title: 'Utilisateurs', url: '/admin/utilisateurs', icon: Users },
@@ -53,6 +54,7 @@ const adminNavItems = [
 
 const managerNavItems = [
   { title: 'Tableau de Bord', url: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'Produits', url: '/manager/produits', icon: Package },
   { title: 'Ventes', url: '/admin/ventes', icon: ShoppingCart },
   { title: 'Stocks', url: '/admin/stocks', icon: Package },
   { title: 'Fournisseurs', url: '/admin/fournisseurs', icon: Truck },
