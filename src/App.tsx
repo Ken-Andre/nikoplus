@@ -11,6 +11,8 @@ import { CartProvider } from "@/hooks/useCart";
 import AuthPage from "./pages/AuthPage";
 import VendeurAccueil from "./pages/vendeur/VendeurAccueil";
 import NouvelleVente from "./pages/vendeur/NouvelleVente";
+import HistoriqueVentes from "./pages/vendeur/HistoriqueVentes";
+import VenteDetails from "./pages/vendeur/VenteDetails";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -89,7 +91,15 @@ function AppRoutes() {
         path="/vendeur/historique-ventes"
         element={
           <ProtectedRoute>
-            <VendeurAccueil />
+            <HistoriqueVentes />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/vendeur/vente/:id"
+        element={
+          <ProtectedRoute>
+            <VenteDetails />
           </ProtectedRoute>
         }
       />
