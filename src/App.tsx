@@ -15,6 +15,7 @@ import HistoriqueVentes from "./pages/vendeur/HistoriqueVentes";
 import VenteDetails from "./pages/vendeur/VenteDetails";
 import ConsultationStocks from "./pages/vendeur/ConsultationStocks";
 import TicketCaisse from "./pages/vendeur/TicketCaisse";
+import GestionProduits from "./pages/manager/GestionProduits";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -116,6 +117,16 @@ function AppRoutes() {
 
       {/* Ticket printing - public route for easy access */}
       <Route path="/ticket/:id" element={<TicketCaisse />} />
+
+      {/* Manager Routes */}
+      <Route
+        path="/manager/produits"
+        element={
+          <ProtectedRoute>
+            <GestionProduits />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Admin Routes - Placeholder */}
       <Route
