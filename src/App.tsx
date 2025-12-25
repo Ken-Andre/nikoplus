@@ -16,6 +16,7 @@ import VenteDetails from "./pages/vendeur/VenteDetails";
 import ConsultationStocks from "./pages/vendeur/ConsultationStocks";
 import TicketCaisse from "./pages/vendeur/TicketCaisse";
 import GestionProduits from "./pages/manager/GestionProduits";
+import GestionCategories from "./pages/manager/GestionCategories";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -124,6 +125,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <GestionProduits />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/manager/categories"
+        element={
+          <ProtectedRoute>
+            <GestionCategories />
           </ProtectedRoute>
         }
       />
