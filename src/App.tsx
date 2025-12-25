@@ -13,6 +13,7 @@ import VendeurAccueil from "./pages/vendeur/VendeurAccueil";
 import NouvelleVente from "./pages/vendeur/NouvelleVente";
 import HistoriqueVentes from "./pages/vendeur/HistoriqueVentes";
 import VenteDetails from "./pages/vendeur/VenteDetails";
+import ConsultationStocks from "./pages/vendeur/ConsultationStocks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -107,7 +108,7 @@ function AppRoutes() {
         path="/vendeur/stocks"
         element={
           <ProtectedRoute>
-            <VendeurAccueil />
+            <ConsultationStocks />
           </ProtectedRoute>
         }
       />
