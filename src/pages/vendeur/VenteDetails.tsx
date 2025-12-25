@@ -160,7 +160,7 @@ export default function VenteDetails() {
   };
 
   const handlePrint = () => {
-    window.print();
+    navigate(`/ticket/${sale?.id}`);
   };
 
   if (isLoading) {

@@ -209,13 +209,69 @@
 
   /* Print styles for tickets */
   @media print {
-    .no-print {
+    @page {
+      size: 80mm auto;
+      margin: 0;
+    }
+
+    body {
+      width: 80mm !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      background: white !important;
+    }
+
+    .no-print,
+    .print\\:hidden {
       display: none !important;
     }
     
     .print-ticket {
       width: 80mm;
       font-size: 12px;
+    }
+
+    .ticket-container {
+      width: 80mm !important;
+      max-width: 80mm !important;
+      padding: 8px !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+      font-family: 'Courier New', Courier, monospace;
+      font-size: 12px;
+      line-height: 1.3;
+      color: black !important;
+      background: white !important;
+    }
+
+    .ticket-header {
+      text-align: center;
+      border-bottom: 1px dashed black !important;
+    }
+
+    .ticket-info,
+    .ticket-items {
+      font-size: 11px;
+    }
+
+    .ticket-total {
+      font-size: 14px;
+      font-weight: bold;
+    }
+
+    .ticket-qr {
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .ticket-qr svg {
+      margin: 0 auto;
+    }
+
+    .ticket-thanks {
+      text-align: center;
+      font-style: italic;
+      font-size: 11px;
     }
   }
 }
