@@ -279,9 +279,9 @@ export default function AdminDashboard() {
               <Button
                 variant="outline"
                 className="w-full"
-                onClick={() => navigate('/manager')}
+                onClick={() => navigate('/admin/rapports')}
               >
-                Voir le dashboard
+                Voir les rapports
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </CardContent>

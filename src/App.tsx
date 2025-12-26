@@ -26,6 +26,8 @@ import PrevisionsVentes from "./pages/manager/PrevisionsVentes";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import GestionUtilisateurs from "./pages/admin/GestionUtilisateurs";
 import GestionBoutiques from "./pages/admin/GestionBoutiques";
+import RapportsGlobaux from "./pages/admin/RapportsGlobaux";
+import ParametresSysteme from "./pages/admin/ParametresSysteme";
 import ProfilPage from "./pages/ProfilPage";
 import NotFound from "./pages/NotFound";
 
@@ -226,6 +228,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <GestionBoutiques />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/rapports"
+        element={
+          <ProtectedRoute>
+            <RapportsGlobaux />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/parametres"
+        element={
+          <ProtectedRoute>
+            <ParametresSysteme />
           </ProtectedRoute>
         }
       />
