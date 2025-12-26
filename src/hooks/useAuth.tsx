@@ -31,19 +31,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .eq('id', supabaseUser.id)
         .maybeSingle();
 
-      // Fetch role
-      const { data: roleData } = await supabase
+      // Fetch roles - get all roles for the user
+      const { data: rolesData } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', supabaseUser.id)
-        .maybeSingle();
+        .eq('user_id', supabaseUser.id);
+
+      // Determine highest role (admin > manager > seller)
+      const rolePriority: Record<string, number> = { admin: 3, manager: 2, seller: 1 };
+      const highestRole = rolesData?.reduce((highest, current) => {
+        const currentPriority = rolePriority[current.role as string] || 0;
+        const highestPriority = rolePriority[highest as string] || 0;
+        return currentPriority > highestPriority ? (current.role as AppRole) : highest;
+      }, 'seller' as AppRole) || 'seller';
 
       const userData: User = {
         id: supabaseUser.id,
         email: supabaseUser.email || '',
         firstName: profile?.first_name || '',
         lastName: profile?.last_name || '',
-        role: (roleData?.role as AppRole) || 'seller',
+        role: highestRole,
         boutiqueId: profile?.boutique_id || undefined,
         boutiqueName: profile?.boutiques?.name || undefined,
         avatarUrl: profile?.avatar_url || undefined,
