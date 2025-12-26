@@ -95,22 +95,20 @@ export default function NouvelleVente() {
 
         if (itemsError) throw itemsError;
 
-        // Update stock for each item
+        // Update stock atomically for each item using database function
         for (const item of items) {
-          // Get current stock
-          const { data: stockData } = await supabase
-            .from('stock')
-            .select('quantity')
-            .eq('product_id', item.product.id)
-            .eq('boutique_id', user?.boutiqueId)
-            .single();
-          
-          if (stockData) {
-            await supabase
-              .from('stock')
-              .update({ quantity: Math.max(0, stockData.quantity - item.quantity) })
-              .eq('product_id', item.product.id)
-              .eq('boutique_id', user?.boutiqueId);
+          const { data: stockUpdated, error: stockError } = await supabase.rpc('decrement_stock', {
+            _product_id: item.product.id,
+            _boutique_id: user?.boutiqueId,
+            _quantity: item.quantity
+          });
+
+          if (stockError) {
+            console.error('Stock update error:', stockError);
+          }
+
+          if (!stockUpdated) {
+            console.warn(`Insufficient stock for ${item.product.name}`);
           }
         }
 
