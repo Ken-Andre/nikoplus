@@ -508,6 +508,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      decrement_stock: {
+        Args: { _boutique_id: string; _product_id: string; _quantity: number }
+        Returns: boolean
+      }
       get_user_boutique: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
