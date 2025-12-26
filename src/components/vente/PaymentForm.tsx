@@ -8,7 +8,7 @@ import { useCart } from '@/hooks/useCart';
 import { PAYMENT_METHODS } from '@/types';
 import { cn } from '@/lib/utils';
 
-type PaymentMethod = 'cash' | 'card' | 'transfer' | 'check';
+type PaymentMethod = 'cash' | 'mobile_money' | 'card' | 'transfer';
 
 interface PaymentFormProps {
   paymentMethod: PaymentMethod;

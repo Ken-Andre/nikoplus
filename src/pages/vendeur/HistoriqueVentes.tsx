@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format, startOfDay, endOfDay } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { Search, Eye, CalendarIcon, X, Banknote, CreditCard, Building2, FileCheck } from 'lucide-react';
+import { Search, Eye, CalendarIcon, X, Banknote, CreditCard, Building2, Smartphone } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
@@ -36,16 +36,16 @@ type SaleWithProfile = SaleRow;
 
 const paymentIcons: Record<string, React.ReactNode> = {
   cash: <Banknote className="h-4 w-4" />,
+  mobile_money: <Smartphone className="h-4 w-4" />,
   card: <CreditCard className="h-4 w-4" />,
   transfer: <Building2 className="h-4 w-4" />,
-  check: <FileCheck className="h-4 w-4" />,
 };
 
 const paymentLabels: Record<string, string> = {
   cash: 'Espèces',
+  mobile_money: 'Mobile Money',
   card: 'Carte',
   transfer: 'Virement',
-  check: 'Chèque',
 };
 
 const statusConfig: Record<string, { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }> = {
