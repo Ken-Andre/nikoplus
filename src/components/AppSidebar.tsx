@@ -56,14 +56,12 @@ const adminNavItems = [
 ];
 
 const managerNavItems = [
-  { title: 'Tableau de Bord', url: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'Tableau de Bord', url: '/manager', icon: LayoutDashboard },
   { title: 'Produits', url: '/manager/produits', icon: Package },
   { title: 'Catégories', url: '/manager/categories', icon: FolderOpen },
   { title: 'Stocks', url: '/manager/stocks', icon: Boxes },
-  { title: 'Ventes', url: '/admin/ventes', icon: ShoppingCart },
-  { title: 'Fournisseurs', url: '/admin/fournisseurs', icon: Truck },
-  { title: 'Alertes', url: '/admin/alertes', icon: Bell },
-  { title: 'Rapports', url: '/admin/rapports', icon: FileText },
+  { title: 'Fournisseurs', url: '/manager/fournisseurs', icon: Truck },
+  { title: 'Alertes', url: '/manager/alertes', icon: Bell },
 ];
 
 export function AppSidebar() {

@@ -18,6 +18,9 @@ import TicketCaisse from "./pages/vendeur/TicketCaisse";
 import GestionProduits from "./pages/manager/GestionProduits";
 import GestionCategories from "./pages/manager/GestionCategories";
 import GestionStocks from "./pages/manager/GestionStocks";
+import ManagerDashboard from "./pages/manager/ManagerDashboard";
+import GestionFournisseurs from "./pages/manager/GestionFournisseurs";
+import AlertesStock from "./pages/manager/AlertesStock";
 import ProfilPage from "./pages/ProfilPage";
 import NotFound from "./pages/NotFound";
 
@@ -69,6 +72,8 @@ function AppRoutes() {
           <ProtectedRoute>
             {user?.role === 'seller' ? (
               <Navigate to="/vendeur/accueil" replace />
+            ) : user?.role === 'manager' ? (
+              <Navigate to="/manager" replace />
             ) : (
               <Navigate to="/admin/dashboard" replace />
             )}
@@ -123,6 +128,14 @@ function AppRoutes() {
 
       {/* Manager Routes */}
       <Route
+        path="/manager"
+        element={
+          <ProtectedRoute>
+            <ManagerDashboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
         path="/manager/produits"
         element={
           <ProtectedRoute>
@@ -143,6 +156,22 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <GestionStocks />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/manager/fournisseurs"
+        element={
+          <ProtectedRoute>
+            <GestionFournisseurs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/manager/alertes"
+        element={
+          <ProtectedRoute>
+            <AlertesStock />
           </ProtectedRoute>
         }
       />
