@@ -67,15 +67,19 @@ export default function GestionObjectifs() {
   });
 
   const isAdmin = user?.role === 'admin';
+  const [boutiquesLoaded, setBoutiquesLoaded] = useState(false);
 
-  // Set default boutique when user loads
+  // Set default boutique when boutiques are loaded
   useEffect(() => {
-    if (isAdmin && boutiques.length > 0 && !selectedBoutiqueId) {
-      setSelectedBoutiqueId(boutiques[0].id);
-    } else if (!isAdmin && user?.boutiqueId) {
-      setSelectedBoutiqueId(user.boutiqueId);
+    if (boutiques.length > 0 && !boutiquesLoaded) {
+      setBoutiquesLoaded(true);
+      if (isAdmin && !selectedBoutiqueId) {
+        setSelectedBoutiqueId(boutiques[0].id);
+      } else if (!isAdmin && user?.boutiqueId && !selectedBoutiqueId) {
+        setSelectedBoutiqueId(user.boutiqueId);
+      }
     }
-  }, [isAdmin, boutiques, user?.boutiqueId, selectedBoutiqueId]);
+  }, [isAdmin, boutiques, user?.boutiqueId, selectedBoutiqueId, boutiquesLoaded]);
 
   useEffect(() => {
     if (selectedBoutiqueId) {

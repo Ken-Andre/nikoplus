@@ -2,13 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { AlertTriangle, PackageX, CheckCircle, Package } from 'lucide-react';
+import { AlertTriangle, PackageX, CheckCircle, Package, Store } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { AppLayout } from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -30,27 +31,40 @@ interface StockAlert {
 
 export default function AlertesStock() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, boutiques } = useAuth();
   const [alerts, setAlerts] = useState<StockAlert[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [filterType, setFilterType] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('unresolved');
+  const [selectedBoutiqueId, setSelectedBoutiqueId] = useState<string>('');
+  const [boutiquesLoaded, setBoutiquesLoaded] = useState(false);
+
+  const isAdmin = user?.role === 'admin';
+
+  // Set default boutique when boutiques are loaded
+  useEffect(() => {
+    if (boutiques.length > 0 && !boutiquesLoaded) {
+      setBoutiquesLoaded(true);
+      if (isAdmin) {
+        // Admin: start with first boutique or 'all'
+        setSelectedBoutiqueId('all');
+      } else if (user?.boutiqueId) {
+        setSelectedBoutiqueId(user.boutiqueId);
+      }
+    }
+  }, [isAdmin, boutiques, user?.boutiqueId, boutiquesLoaded]);
 
   useEffect(() => {
-    fetchAlerts();
-  }, [user, filterType, filterStatus]);
+    if (selectedBoutiqueId) {
+      fetchAlerts();
+    }
+  }, [selectedBoutiqueId, filterType, filterStatus]);
 
   const fetchAlerts = async () => {
-    if (!user) return;
+    if (!user || !selectedBoutiqueId) return;
     setIsLoading(true);
 
     try {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('boutique_id')
-        .eq('id', user.id)
-        .maybeSingle();
-
       let query = supabase
         .from('stock_alerts')
         .select(`
@@ -60,8 +74,9 @@ export default function AlertesStock() {
         `)
         .order('created_at', { ascending: false });
 
-      if (profile?.boutique_id) {
-        query = query.eq('boutique_id', profile.boutique_id);
+      // Filter by boutique (unless admin selected 'all')
+      if (selectedBoutiqueId !== 'all') {
+        query = query.eq('boutique_id', selectedBoutiqueId);
       }
 
       if (filterType !== 'all') {
@@ -79,20 +94,30 @@ export default function AlertesStock() {
 
       // Get current stock levels
       const productIds = [...new Set(data?.map(a => a.product_id) || [])];
-      const { data: stockData } = await supabase
+      
+      // Fetch stock for all relevant boutiques
+      let stockQuery = supabase
         .from('stock')
-        .select('product_id, quantity')
-        .in('product_id', productIds)
-        .eq('boutique_id', profile?.boutique_id);
+        .select('product_id, boutique_id, quantity')
+        .in('product_id', productIds);
+      
+      if (selectedBoutiqueId !== 'all') {
+        stockQuery = stockQuery.eq('boutique_id', selectedBoutiqueId);
+      }
+      
+      const { data: stockData } = await stockQuery;
 
-      const stockMap = new Map(stockData?.map(s => [s.product_id, s.quantity]) || []);
+      // Create stock map keyed by product_id + boutique_id
+      const stockMap = new Map(
+        stockData?.map(s => [`${s.product_id}-${s.boutique_id}`, s.quantity]) || []
+      );
 
       setAlerts(
         (data || []).map(alert => ({
           ...alert,
           product_name: (alert.products as any)?.name,
           boutique_name: (alert.boutiques as any)?.name,
-          current_stock: stockMap.get(alert.product_id) ?? 0,
+          current_stock: stockMap.get(`${alert.product_id}-${alert.boutique_id}`) ?? 0,
         }))
       );
     } catch (error) {
@@ -131,6 +156,30 @@ export default function AlertesStock() {
   return (
     <AppLayout title="Alertes de Stock" backButton>
       <div className="space-y-6">
+        {/* Boutique Selector for Admin */}
+        {isAdmin && boutiques.length > 0 && (
+          <Card>
+            <CardContent className="p-4">
+              <div className="flex items-center gap-3">
+                <Store className="h-4 w-4 text-muted-foreground" />
+                <Label>Boutique :</Label>
+                <Select value={selectedBoutiqueId} onValueChange={setSelectedBoutiqueId}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder="Sélectionner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Toutes les boutiques</SelectItem>
+                    {boutiques.map((boutique) => (
+                      <SelectItem key={boutique.id} value={boutique.id}>
+                        {boutique.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardContent>
+          </Card>
+        )}
         {/* Stats Cards */}
         <div className="grid gap-4 md:grid-cols-3">
           <Card>
