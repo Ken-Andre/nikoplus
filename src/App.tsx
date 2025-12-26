@@ -18,6 +18,7 @@ import TicketCaisse from "./pages/vendeur/TicketCaisse";
 import GestionProduits from "./pages/manager/GestionProduits";
 import GestionCategories from "./pages/manager/GestionCategories";
 import GestionStocks from "./pages/manager/GestionStocks";
+import ProfilPage from "./pages/ProfilPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -161,7 +162,7 @@ function AppRoutes() {
         path="/profil"
         element={
           <ProtectedRoute>
-            <VendeurAccueil />
+            <ProfilPage />
           </ProtectedRoute>
         }
       />
