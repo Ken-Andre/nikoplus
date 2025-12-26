@@ -16,7 +16,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    sourcemap: mode !== 'production',
+    sourcemap: true,
     rollupOptions: {
       output: {
         manualChunks: {
