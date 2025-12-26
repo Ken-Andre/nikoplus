@@ -267,6 +267,50 @@ export type Database = {
           },
         ]
       }
+      sales_objectives: {
+        Row: {
+          boutique_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          month: number
+          seller_id: string
+          target_amount: number
+          updated_at: string
+          year: number
+        }
+        Insert: {
+          boutique_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          month: number
+          seller_id: string
+          target_amount?: number
+          updated_at?: string
+          year: number
+        }
+        Update: {
+          boutique_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          month?: number
+          seller_id?: string
+          target_amount?: number
+          updated_at?: string
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sales_objectives_boutique_id_fkey"
+            columns: ["boutique_id"]
+            isOneToOne: false
+            referencedRelation: "boutiques"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock: {
         Row: {
           boutique_id: string

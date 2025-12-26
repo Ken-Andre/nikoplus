@@ -9,19 +9,27 @@ import {
   Clock,
   Store,
   Loader2,
+  Target,
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { format } from 'date-fns';
+import { Progress } from '@/components/ui/progress';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
 interface TodayStats {
   salesCount: number;
   totalAmount: number;
   lastSaleTime: string | null;
+}
+
+interface MonthlyObjective {
+  targetAmount: number;
+  currentAmount: number;
+  progressPercent: number;
 }
 
 export default function VendeurAccueil() {
@@ -31,10 +39,11 @@ export default function VendeurAccueil() {
     totalAmount: 0,
     lastSaleTime: null,
   });
+  const [objective, setObjective] = useState<MonthlyObjective | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchTodayStats = async () => {
+    const fetchData = async () => {
       if (!user?.id) return;
 
       try {
@@ -43,20 +52,26 @@ export default function VendeurAccueil() {
         today.setHours(0, 0, 0, 0);
         const todayISO = today.toISOString();
 
+        // Get month boundaries
+        const monthStart = startOfMonth(new Date());
+        const monthEnd = endOfMonth(new Date());
+        const currentMonth = monthStart.getMonth() + 1;
+        const currentYear = monthStart.getFullYear();
+
         // Fetch today's sales for current user
-        const { data: sales, error } = await supabase
+        const { data: todaySales, error: todayError } = await supabase
           .from('sales')
           .select('id, total_amount, created_at')
           .eq('seller_id', user.id)
           .gte('created_at', todayISO)
           .order('created_at', { ascending: false });
 
-        if (error) throw error;
+        if (todayError) throw todayError;
 
-        const salesCount = sales?.length || 0;
-        const totalAmount = sales?.reduce((sum, sale) => sum + Number(sale.total_amount), 0) || 0;
-        const lastSaleTime = sales?.[0]?.created_at 
-          ? format(new Date(sales[0].created_at), 'HH:mm', { locale: fr })
+        const salesCount = todaySales?.length || 0;
+        const totalAmount = todaySales?.reduce((sum, sale) => sum + Number(sale.total_amount), 0) || 0;
+        const lastSaleTime = todaySales?.[0]?.created_at 
+          ? format(new Date(todaySales[0].created_at), 'HH:mm', { locale: fr })
           : null;
 
         setStats({
@@ -64,14 +79,43 @@ export default function VendeurAccueil() {
           totalAmount,
           lastSaleTime,
         });
+
+        // Fetch monthly objective
+        const { data: objectiveData } = await supabase
+          .from('sales_objectives')
+          .select('target_amount')
+          .eq('seller_id', user.id)
+          .eq('month', currentMonth)
+          .eq('year', currentYear)
+          .maybeSingle();
+
+        if (objectiveData && objectiveData.target_amount > 0) {
+          // Fetch monthly sales
+          const { data: monthlySales } = await supabase
+            .from('sales')
+            .select('total_amount')
+            .eq('seller_id', user.id)
+            .gte('created_at', monthStart.toISOString())
+            .lte('created_at', monthEnd.toISOString());
+
+          const monthlyAmount = monthlySales?.reduce((sum, sale) => sum + Number(sale.total_amount), 0) || 0;
+          const target = Number(objectiveData.target_amount);
+          const progressPercent = Math.min((monthlyAmount / target) * 100, 100);
+
+          setObjective({
+            targetAmount: target,
+            currentAmount: monthlyAmount,
+            progressPercent,
+          });
+        }
       } catch (error) {
-        console.error('Error fetching stats:', error);
+        console.error('Error fetching data:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchTodayStats();
+    fetchData();
   }, [user?.id]);
 
   return (
@@ -159,6 +203,65 @@ export default function VendeurAccueil() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Monthly Objective Progress */}
+        {objective && (
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <Target className="h-5 w-5 text-primary" />
+                Objectif du mois
+              </CardTitle>
+              <CardDescription>
+                {format(new Date(), 'MMMM yyyy', { locale: fr })}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-end">
+                <div>
+                  <p className="text-sm text-muted-foreground">Réalisé</p>
+                  <p className="text-2xl font-bold text-primary">
+                    {objective.currentAmount.toLocaleString('fr-FR')} <span className="text-sm font-normal">XAF</span>
+                  </p>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm text-muted-foreground">Objectif</p>
+                  <p className="text-lg font-semibold text-foreground">
+                    {objective.targetAmount.toLocaleString('fr-FR')} <span className="text-sm font-normal">XAF</span>
+                  </p>
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Progress 
+                  value={objective.progressPercent} 
+                  className="h-3"
+                  indicatorClassName={
+                    objective.progressPercent >= 100 
+                      ? 'bg-success' 
+                      : objective.progressPercent >= 75 
+                        ? 'bg-primary' 
+                        : objective.progressPercent >= 50 
+                          ? 'bg-warning' 
+                          : 'bg-destructive'
+                  }
+                />
+                <div className="flex justify-between text-sm">
+                  <span className={
+                    objective.progressPercent >= 100 
+                      ? 'text-success font-semibold' 
+                      : 'text-muted-foreground'
+                  }>
+                    {objective.progressPercent.toFixed(1)}% atteint
+                  </span>
+                  <span className="text-muted-foreground">
+                    Reste: {Math.max(0, objective.targetAmount - objective.currentAmount).toLocaleString('fr-FR')} XAF
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Quick Actions */}
         <div className="grid gap-4 sm:grid-cols-3">
