@@ -128,8 +128,15 @@ function AppRoutes() {
         }
       />
 
-      {/* Ticket printing - public route for easy access */}
-      <Route path="/ticket/:id" element={<TicketCaisse />} />
+      {/* Ticket printing - requires authentication for security */}
+      <Route
+        path="/ticket/:id"
+        element={
+          <ProtectedRoute>
+            <TicketCaisse />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Manager Routes */}
       <Route
