@@ -739,7 +739,7 @@ export default function ManagerDashboard() {
         </Card>
 
         {/* KPI Cards - Extended */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
@@ -790,7 +790,7 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Secondary Stats Row */}
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
           {isLoading ? (
             Array.from({ length: 3 }).map((_, i) => (
               <Card key={i}>
@@ -836,7 +836,7 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Main Charts Row */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Sales Evolution - Extended to 14 days */}
           <Card className="lg:col-span-2">
             <CardHeader>
@@ -863,8 +863,17 @@ export default function ManagerDashboard() {
                       </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
-                    <XAxis dataKey="date" className="text-xs" />
-                    <YAxis yAxisId="amount" orientation="left" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} className="text-xs" />
+                    <XAxis 
+                      dataKey="date" 
+                      className="text-xs" 
+                      tick={{ fontSize: 10 }}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                      interval="preserveStartEnd"
+                    />
+                    <YAxis yAxisId="amount" orientation="left" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} className="text-xs" tick={{ fontSize: 10 }} width={45} />
+                    <YAxis yAxisId="count" orientation="right" className="text-xs" tick={{ fontSize: 10 }} width={35} />
                     <YAxis yAxisId="count" orientation="right" className="text-xs" />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
@@ -908,7 +917,7 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Category and Payment Charts */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Category Distribution */}
           <Card>
             <CardHeader>
@@ -1019,7 +1028,7 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Hourly Distribution and Top Products */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Hourly Sales Distribution */}
           <Card>
             <CardHeader>
@@ -1105,7 +1114,7 @@ export default function ManagerDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-4">
+        <div className="grid gap-4 grid-cols-2 sm:grid-cols-2 md:grid-cols-4">
           <Button className="h-14" onClick={() => navigate('/manager/produits')}>
             Gérer les produits
           </Button>
