@@ -17,6 +17,7 @@ import {
   FolderOpen,
   Boxes,
   Target,
+  TrendingUp,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -52,6 +53,7 @@ const adminNavItems = [
   { title: 'Stocks', url: '/manager/stocks', icon: Boxes },
   { title: 'Fournisseurs', url: '/manager/fournisseurs', icon: Truck },
   { title: 'Objectifs', url: '/manager/objectifs', icon: Target },
+  { title: 'Prévisions', url: '/manager/previsions', icon: TrendingUp },
   { title: 'Alertes', url: '/manager/alertes', icon: Bell },
 ];
 
@@ -62,6 +64,7 @@ const managerNavItems = [
   { title: 'Stocks', url: '/manager/stocks', icon: Boxes },
   { title: 'Fournisseurs', url: '/manager/fournisseurs', icon: Truck },
   { title: 'Objectifs', url: '/manager/objectifs', icon: Target },
+  { title: 'Prévisions', url: '/manager/previsions', icon: TrendingUp },
   { title: 'Alertes', url: '/manager/alertes', icon: Bell },
 ];
 

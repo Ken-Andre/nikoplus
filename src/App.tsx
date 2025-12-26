@@ -22,6 +22,7 @@ import ManagerDashboard from "./pages/manager/ManagerDashboard";
 import GestionFournisseurs from "./pages/manager/GestionFournisseurs";
 import AlertesStock from "./pages/manager/AlertesStock";
 import GestionObjectifs from "./pages/manager/GestionObjectifs";
+import PrevisionsVentes from "./pages/manager/PrevisionsVentes";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import GestionUtilisateurs from "./pages/admin/GestionUtilisateurs";
 import GestionBoutiques from "./pages/admin/GestionBoutiques";
@@ -184,6 +185,14 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <GestionObjectifs />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/manager/previsions"
+        element={
+          <ProtectedRoute>
+            <PrevisionsVentes />
           </ProtectedRoute>
         }
       />
