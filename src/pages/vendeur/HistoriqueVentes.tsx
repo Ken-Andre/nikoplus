@@ -154,6 +154,9 @@ export default function HistoriqueVentes() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              id="sales-search"
+              name="search"
+              autoComplete="off"
               placeholder="Rechercher par référence ou client..."
               value={searchQuery}
               onChange={(e) => {
@@ -195,12 +198,13 @@ export default function HistoriqueVentes() {
           {/* Status filter */}
           <Select
             value={selectedStatus}
+            name="status-filter"
             onValueChange={(value) => {
               setSelectedStatus(value);
               setCurrentPage(1);
             }}
           >
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger id="sales-status-filter" className="w-full sm:w-[180px]">
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>

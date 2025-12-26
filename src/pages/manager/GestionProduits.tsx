@@ -169,6 +169,9 @@ export default function GestionProduits() {
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
+              id="products-search"
+              name="search"
+              autoComplete="off"
               placeholder="Rechercher un produit..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -176,7 +179,7 @@ export default function GestionProduits() {
             />
           </div>
           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger id="products-category-filter" className="w-full sm:w-[180px]">
               <Filter className="h-4 w-4 mr-2" />
               <SelectValue placeholder="Catégorie" />
             </SelectTrigger>
@@ -190,7 +193,7 @@ export default function GestionProduits() {
             </SelectContent>
           </Select>
           <Select value={showActiveOnly} onValueChange={setShowActiveOnly}>
-            <SelectTrigger className="w-full sm:w-[150px]">
+            <SelectTrigger id="products-status-filter" className="w-full sm:w-[150px]">
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>

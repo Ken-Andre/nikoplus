@@ -293,6 +293,9 @@ export default function GestionBoutiques() {
               <div className="relative flex-1 md:max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
+                  id="boutique-search"
+                  name="search"
+                  autoComplete="off"
                   placeholder="Rechercher une boutique..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
