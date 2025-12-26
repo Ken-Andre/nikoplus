@@ -53,7 +53,47 @@ export function useExportReports() {
     return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
   };
 
-  const exportToExcel = useCallback((data: ExportData, boutiqueName?: string) => {
+  // Simple export for generic data arrays (used by admin global reports)
+  const exportSimpleExcel = useCallback((data: Record<string, any>[], filename: string) => {
+    const workbook = XLSX.utils.book_new();
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Données');
+    XLSX.writeFile(workbook, `${filename}.xlsx`);
+  }, []);
+
+  const exportSimplePDF = useCallback((data: Record<string, any>[], filename: string) => {
+    const doc = new jsPDF();
+    const today = format(new Date(), 'dd MMMM yyyy HH:mm', { locale: fr });
+    
+    doc.setFontSize(18);
+    doc.text('Rapport Global', 105, 20, { align: 'center' });
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Généré le ${today}`, 105, 28, { align: 'center' });
+
+    if (data.length > 0) {
+      const headers = Object.keys(data[0]);
+      const body = data.map(row => headers.map(h => String(row[h] ?? '')));
+
+      autoTable(doc, {
+        startY: 35,
+        head: [headers],
+        body: body,
+        theme: 'striped',
+        headStyles: { fillColor: [59, 130, 246] },
+        margin: { left: 14 },
+      });
+    }
+
+    doc.save(`${filename}.pdf`);
+  }, []);
+
+  const exportToExcel = useCallback((data: ExportData | Record<string, any>[], boutiqueName?: string) => {
+    // Handle simple array export
+    if (Array.isArray(data)) {
+      return exportSimpleExcel(data, boutiqueName || 'export');
+    }
+
     const workbook = XLSX.utils.book_new();
     const today = format(new Date(), 'dd-MM-yyyy', { locale: fr });
 
@@ -131,9 +171,14 @@ export function useExportReports() {
     XLSX.utils.book_append_sheet(workbook, hourlySheet, 'Par heure');
 
     XLSX.writeFile(workbook, `rapport-ventes-${today}.xlsx`);
-  }, []);
+  }, [exportSimpleExcel]);
 
-  const exportToPDF = useCallback((data: ExportData, boutiqueName?: string) => {
+  const exportToPDF = useCallback((data: ExportData | Record<string, any>[], boutiqueName?: string) => {
+    // Handle simple array export
+    if (Array.isArray(data)) {
+      return exportSimplePDF(data, boutiqueName || 'export');
+    }
+
     const doc = new jsPDF();
     const today = format(new Date(), 'dd MMMM yyyy HH:mm', { locale: fr });
     let yPos = 20;
