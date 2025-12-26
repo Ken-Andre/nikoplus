@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,8 +7,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { ConnectionProvider } from "@/hooks/useConnectionStatus";
 import { CartProvider } from "@/hooks/useCart";
-
-// Pages
+import { useSyncQueue } from "@/hooks/useSyncQueue";
+import { useOfflineCache } from "@/hooks/useOfflineCache";
 import AuthPage from "./pages/AuthPage";
 import VendeurAccueil from "./pages/vendeur/VendeurAccueil";
 import NouvelleVente from "./pages/vendeur/NouvelleVente";
@@ -53,6 +54,17 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { user, isLoading } = useAuth();
+  
+  // Initialize cache and sync queue
+  const { isInitialized: cacheInitialized } = useOfflineCache(user?.boutiqueId);
+  const { pendingCount } = useSyncQueue();
+  
+  // Log sync status
+  useEffect(() => {
+    if (cacheInitialized && pendingCount > 0) {
+      console.log(`Cache initialized. ${pendingCount} pending transactions.`);
+    }
+  }, [cacheInitialized, pendingCount]);
 
   if (isLoading) {
     return (

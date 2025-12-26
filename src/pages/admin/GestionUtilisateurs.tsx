@@ -20,6 +20,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -388,7 +389,6 @@ export default function GestionUtilisateurs() {
                   <Input
                     id="user-search"
                     name="search"
-                    autoComplete="off"
                     placeholder="Rechercher..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -589,6 +589,11 @@ export default function GestionUtilisateurs() {
             <DialogTitle>
               {selectedUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}
             </DialogTitle>
+            <DialogDescription>
+              {selectedUser 
+                ? 'Modifiez les informations et le rôle de l\'utilisateur'
+                : 'Créez un nouveau compte utilisateur avec un rôle et une boutique'}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">

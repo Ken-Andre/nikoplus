@@ -5,7 +5,7 @@ import { AppLayout } from '@/components/AppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -114,7 +114,6 @@ export default function GestionFournisseurs() {
             <Input
               id="supplier-search"
               name="search"
-              autoComplete="off"
               placeholder="Rechercher un fournisseur..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -133,6 +132,11 @@ export default function GestionFournisseurs() {
                 <DialogTitle>
                   {editingSupplier ? 'Modifier le fournisseur' : 'Nouveau fournisseur'}
                 </DialogTitle>
+                <DialogDescription>
+                  {editingSupplier 
+                    ? 'Modifiez les informations du fournisseur'
+                    : 'Ajoutez un nouveau fournisseur à votre liste'}
+                </DialogDescription>
               </DialogHeader>
               <SupplierForm
                 supplier={editingSupplier}

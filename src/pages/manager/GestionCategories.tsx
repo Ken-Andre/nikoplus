@@ -9,6 +9,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -169,6 +170,8 @@ export default function GestionCategories() {
         <div className="relative max-w-md">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            id="category-search"
+            name="search"
             placeholder="Rechercher une catégorie..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -262,6 +265,11 @@ export default function GestionCategories() {
             <DialogTitle>
               {editingCategoryId ? 'Modifier la catégorie' : 'Nouvelle catégorie'}
             </DialogTitle>
+            <DialogDescription>
+              {editingCategoryId 
+                ? 'Modifiez les informations de la catégorie'
+                : 'Créez une nouvelle catégorie pour organiser vos produits'}
+            </DialogDescription>
           </DialogHeader>
           <CategoryForm
             categoryId={editingCategoryId}

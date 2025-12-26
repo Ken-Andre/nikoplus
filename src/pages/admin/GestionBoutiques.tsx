@@ -14,6 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -295,7 +296,6 @@ export default function GestionBoutiques() {
                 <Input
                   id="boutique-search"
                   name="search"
-                  autoComplete="off"
                   placeholder="Rechercher une boutique..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -397,6 +397,11 @@ export default function GestionBoutiques() {
             <DialogTitle>
               {selectedBoutique ? 'Modifier la boutique' : 'Nouvelle boutique'}
             </DialogTitle>
+            <DialogDescription>
+              {selectedBoutique 
+                ? 'Modifiez les informations de la boutique'
+                : 'Créez une nouvelle boutique dans votre réseau'}
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">

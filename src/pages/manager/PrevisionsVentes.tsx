@@ -13,6 +13,7 @@ import {
   ShoppingCart,
   Target,
   Loader2,
+  Store,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -106,9 +107,10 @@ interface ForecastStats {
 const FORECAST_DAYS = 14;
 
 export default function PrevisionsVentes() {
-  const { user } = useAuth();
+  const { user, boutiques } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
   const [boutiqueId, setBoutiqueId] = useState<string | null>(null);
+  const [selectedBoutiqueId, setSelectedBoutiqueId] = useState<string>('');
   const [productForecasts, setProductForecasts] = useState<ProductForecast[]>([]);
   const [salesForecast, setSalesForecast] = useState<SalesForecast[]>([]);
   const [categoryForecasts, setCategoryForecasts] = useState<CategoryForecast[]>([]);
@@ -116,31 +118,30 @@ export default function PrevisionsVentes() {
   const [forecastPeriod, setForecastPeriod] = useState<'7' | '14' | '30'>('14');
   const [sortBy, setSortBy] = useState<'risk' | 'sales' | 'stock'>('risk');
 
+  const isAdmin = user?.role === 'admin';
+
+  // Set default boutique when user loads
   useEffect(() => {
-    if (user) {
+    if (isAdmin && boutiques.length > 0 && !selectedBoutiqueId) {
+      setSelectedBoutiqueId(boutiques[0].id);
+    } else if (!isAdmin && user?.boutiqueId && !selectedBoutiqueId) {
+      setSelectedBoutiqueId(user.boutiqueId);
+    }
+  }, [isAdmin, boutiques, user?.boutiqueId, selectedBoutiqueId]);
+
+  useEffect(() => {
+    if (selectedBoutiqueId) {
       fetchForecastData();
     }
-  }, [user, forecastPeriod]);
+  }, [selectedBoutiqueId, forecastPeriod]);
 
   const fetchForecastData = async () => {
-    if (!user) return;
+    if (!selectedBoutiqueId) return;
     setIsLoading(true);
 
     try {
-      // Get user's boutique
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('boutique_id')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (!profile?.boutique_id) {
-        setIsLoading(false);
-        return;
-      }
-
-      setBoutiqueId(profile.boutique_id);
-      const boutique_id = profile.boutique_id;
+      const boutique_id = selectedBoutiqueId;
+      setBoutiqueId(boutique_id);
 
       const today = new Date();
       const lastMonth = subMonths(today, 1);
@@ -495,6 +496,22 @@ export default function PrevisionsVentes() {
             </p>
           </div>
           <div className="flex items-center gap-3">
+            {/* Boutique selector for admin */}
+            {isAdmin && boutiques.length > 0 && (
+              <Select value={selectedBoutiqueId} onValueChange={setSelectedBoutiqueId}>
+                <SelectTrigger className="w-[180px]">
+                  <Store className="h-4 w-4 mr-2" />
+                  <SelectValue placeholder="Boutique" />
+                </SelectTrigger>
+                <SelectContent>
+                  {boutiques.map((boutique) => (
+                    <SelectItem key={boutique.id} value={boutique.id}>
+                      {boutique.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            )}
             <Select value={forecastPeriod} onValueChange={(v: '7' | '14' | '30') => setForecastPeriod(v)}>
               <SelectTrigger className="w-[160px]">
                 <Calendar className="h-4 w-4 mr-2" />

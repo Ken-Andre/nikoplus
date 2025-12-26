@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { toast } from 'sonner';
@@ -171,7 +171,6 @@ export default function GestionProduits() {
             <Input
               id="products-search"
               name="search"
-              autoComplete="off"
               placeholder="Rechercher un produit..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -325,6 +324,11 @@ export default function GestionProduits() {
             <DialogTitle>
               {editingProductId ? 'Modifier le produit' : 'Nouveau produit'}
             </DialogTitle>
+            <DialogDescription>
+              {editingProductId 
+                ? 'Modifiez les informations du produit'
+                : 'Ajoutez un nouveau produit à votre catalogue'}
+            </DialogDescription>
           </DialogHeader>
           <ProductForm
             productId={editingProductId || undefined}
