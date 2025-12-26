@@ -438,7 +438,7 @@ export default function GestionObjectifs() {
                 <Input value={editingObjective.sellerName} disabled />
               ) : (
                 <Select value={formData.sellerId} onValueChange={(v) => setFormData({ ...formData, sellerId: v })}>
-                  <SelectTrigger>
+                  <SelectTrigger id="objective-seller-select">
                     <SelectValue placeholder="Sélectionner un vendeur" />
                   </SelectTrigger>
                   <SelectContent>
@@ -454,6 +454,8 @@ export default function GestionObjectifs() {
             <div className="space-y-2">
               <Label>Objectif mensuel (XAF)</Label>
               <Input
+                id="objective-target-amount"
+                name="targetAmount"
                 type="number"
                 value={formData.targetAmount}
                 onChange={(e) => setFormData({ ...formData, targetAmount: e.target.value })}

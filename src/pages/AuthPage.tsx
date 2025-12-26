@@ -143,6 +143,7 @@ export default function AuthPage() {
                       <Input
                         id="login-email"
                         type="email"
+                        autoComplete="email"
                         placeholder="votre@email.com"
                         className="pl-10"
                         {...loginForm.register('email')}
@@ -162,6 +163,7 @@ export default function AuthPage() {
                       <Input
                         id="login-password"
                         type={showPassword ? 'text' : 'password'}
+                        autoComplete="current-password"
                         placeholder="••••••••"
                         className="pl-10 pr-10"
                         {...loginForm.register('password')}
@@ -219,6 +221,7 @@ export default function AuthPage() {
                       <Label htmlFor="firstName">Prénom</Label>
                       <Input
                         id="firstName"
+                        autoComplete="given-name"
                         placeholder="Jean"
                         {...signupForm.register('firstName')}
                       />
@@ -232,6 +235,7 @@ export default function AuthPage() {
                       <Label htmlFor="lastName">Nom</Label>
                       <Input
                         id="lastName"
+                        autoComplete="family-name"
                         placeholder="Dupont"
                         {...signupForm.register('lastName')}
                       />
@@ -250,6 +254,7 @@ export default function AuthPage() {
                       <Input
                         id="signup-email"
                         type="email"
+                        autoComplete="email"
                         placeholder="votre@email.com"
                         className="pl-10"
                         {...signupForm.register('email')}
@@ -269,6 +274,7 @@ export default function AuthPage() {
                       <Input
                         id="signup-password"
                         type={showPassword ? 'text' : 'password'}
+                        autoComplete="new-password"
                         placeholder="••••••••"
                         className="pl-10 pr-10"
                         {...signupForm.register('password')}
@@ -291,12 +297,13 @@ export default function AuthPage() {
 
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirmer le mot de passe</Label>
-                    <Input
-                      id="confirmPassword"
-                      type="password"
-                      placeholder="••••••••"
-                      {...signupForm.register('confirmPassword')}
-                    />
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        autoComplete="new-password"
+                        placeholder="••••••••"
+                        {...signupForm.register('confirmPassword')}
+                      />
                     {signupForm.formState.errors.confirmPassword && (
                       <p className="text-sm text-destructive">
                         {signupForm.formState.errors.confirmPassword.message}

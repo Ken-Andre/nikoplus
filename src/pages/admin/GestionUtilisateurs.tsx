@@ -386,6 +386,9 @@ export default function GestionUtilisateurs() {
                 <div className="relative flex-1 md:max-w-sm">
                   <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
+                    id="user-search"
+                    name="search"
+                    autoComplete="off"
                     placeholder="Rechercher..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
@@ -393,7 +396,7 @@ export default function GestionUtilisateurs() {
                   />
                 </div>
                 <Select value={roleFilter} onValueChange={setRoleFilter}>
-                  <SelectTrigger className="w-40">
+                  <SelectTrigger id="user-role-filter" className="w-40">
                     <SelectValue placeholder="Filtrer par rôle" />
                   </SelectTrigger>
                   <SelectContent>

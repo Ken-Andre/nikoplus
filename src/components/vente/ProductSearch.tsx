@@ -140,6 +140,9 @@ export function ProductSearch() {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            id="product-search"
+            name="search"
+            autoComplete="off"
             placeholder="Rechercher un produit..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -147,7 +150,7 @@ export function ProductSearch() {
           />
         </div>
         <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-          <SelectTrigger className="w-full sm:w-48">
+          <SelectTrigger id="product-category-filter" className="w-full sm:w-48">
             <SelectValue placeholder="Catégorie" />
           </SelectTrigger>
           <SelectContent>
