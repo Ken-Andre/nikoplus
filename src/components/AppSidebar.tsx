@@ -16,6 +16,7 @@ import {
   Store,
   FolderOpen,
   Boxes,
+  Target,
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
@@ -50,6 +51,7 @@ const adminNavItems = [
   { title: 'Catégories', url: '/manager/categories', icon: FolderOpen },
   { title: 'Stocks', url: '/manager/stocks', icon: Boxes },
   { title: 'Fournisseurs', url: '/manager/fournisseurs', icon: Truck },
+  { title: 'Objectifs', url: '/manager/objectifs', icon: Target },
   { title: 'Alertes', url: '/manager/alertes', icon: Bell },
 ];
 
@@ -59,6 +61,7 @@ const managerNavItems = [
   { title: 'Catégories', url: '/manager/categories', icon: FolderOpen },
   { title: 'Stocks', url: '/manager/stocks', icon: Boxes },
   { title: 'Fournisseurs', url: '/manager/fournisseurs', icon: Truck },
+  { title: 'Objectifs', url: '/manager/objectifs', icon: Target },
   { title: 'Alertes', url: '/manager/alertes', icon: Bell },
 ];
 
