@@ -431,8 +431,10 @@ export default function GestionUtilisateurs() {
                 Aucun utilisateur trouvé
               </div>
             ) : (
-              <div className="overflow-x-auto">
-                <Table>
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <Table>
                   <TableHeader>
                     <TableRow>
                       <TableHead>Nom</TableHead>
@@ -484,19 +486,23 @@ export default function GestionUtilisateurs() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-2">
+                          <div className="flex justify-end gap-1">
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-10 w-10"
                               onClick={() => handleOpenEdit(u)}
+                              aria-label={`Modifier ${u.first_name || ''} ${u.last_name || u.email}`}
                             >
                               <Edit className="h-4 w-4" />
                             </Button>
                             <Button
                               variant="ghost"
                               size="icon"
+                              className="h-10 w-10"
                               onClick={() => handleOpenDelete(u)}
                               disabled={u.id === user?.id}
+                              aria-label={`Supprimer ${u.first_name || ''} ${u.last_name || u.email}`}
                             >
                               <Trash2 className="h-4 w-4 text-destructive" />
                             </Button>
@@ -505,8 +511,69 @@ export default function GestionUtilisateurs() {
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
-              </div>
+                  </Table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden space-y-3">
+                  {filteredUsers.map((u) => (
+                    <Card key={u.id} className="p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0 space-y-2">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium truncate">
+                              {u.first_name || u.last_name
+                                ? `${u.first_name || ''} ${u.last_name || ''}`.trim()
+                                : '-'}
+                            </p>
+                            <Badge className={`${roleColors[u.role]} shrink-0`}>
+                              <Shield className="mr-1 h-3 w-3" />
+                              {roleLabels[u.role]}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Mail className="h-3 w-3 shrink-0" />
+                            <span className="truncate">{u.email}</span>
+                          </div>
+                          {u.phone && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Phone className="h-3 w-3 shrink-0" />
+                              <span>{u.phone}</span>
+                            </div>
+                          )}
+                          {u.boutiques?.name && (
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <Store className="h-3 w-3 shrink-0" />
+                              <span>{u.boutiques.name}</span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex flex-col gap-1">
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10"
+                            onClick={() => handleOpenEdit(u)}
+                            aria-label={`Modifier ${u.first_name || ''} ${u.last_name || u.email}`}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-10 w-10"
+                            onClick={() => handleOpenDelete(u)}
+                            disabled={u.id === user?.id}
+                            aria-label={`Supprimer ${u.first_name || ''} ${u.last_name || u.email}`}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </>
             )}
           </CardContent>
         </Card>
@@ -514,7 +581,7 @@ export default function GestionUtilisateurs() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-[95vw] sm:max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {selectedUser ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}

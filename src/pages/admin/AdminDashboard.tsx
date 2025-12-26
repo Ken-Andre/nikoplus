@@ -372,7 +372,7 @@ export default function AdminDashboard() {
     <AppLayout title="Administration">
       <div className="space-y-6">
         {/* Stats Grid */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {isLoading ? (
             Array(6).fill(0).map((_, i) => (
               <Card key={i}>
@@ -424,7 +424,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Charts Section */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Revenue Trend Chart */}
           <Card>
             <CardHeader>
@@ -439,9 +439,12 @@ export default function AdminDashboard() {
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis 
                       dataKey="date" 
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 10 }}
                       tickLine={false}
                       interval="preserveStartEnd"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
                     />
                     <YAxis 
                       tick={{ fontSize: 12 }}
@@ -485,13 +488,17 @@ export default function AdminDashboard() {
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis 
                       dataKey="date" 
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 10 }}
                       tickLine={false}
                       interval="preserveStartEnd"
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
                     />
                     <YAxis 
-                      tick={{ fontSize: 12 }}
+                      tick={{ fontSize: 10 }}
                       tickLine={false}
+                      width={40}
                     />
                     <Tooltip 
                       formatter={(value: number) => [value, 'Ventes']}
@@ -515,7 +522,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Top Boutiques & Critical Alerts */}
-        <div className="grid gap-6 lg:grid-cols-2">
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
           {/* Top 5 Boutiques */}
           <Card>
             <CardHeader>
@@ -608,7 +615,7 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
           <Card className="hover:shadow-md transition-shadow">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
@@ -701,7 +708,7 @@ export default function AdminDashboard() {
               <CardTitle>Répartition des utilisateurs par rôle</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid gap-4 md:grid-cols-3">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
                 <div className="flex items-center gap-4 rounded-lg border p-4">
                   <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
                     <Users className="h-6 w-6 text-red-600 dark:text-red-400" />
