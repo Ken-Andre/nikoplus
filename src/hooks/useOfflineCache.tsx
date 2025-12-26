@@ -27,11 +27,9 @@ export function useOfflineCache(boutiqueId?: string): UseOfflineCacheReturn {
   }, []);
 
   const refreshCache = useCallback(async () => {
-    if (!boutiqueId) return;
-
     setIsLoading(true);
     try {
-      // Fetch products
+      // Fetch all active products (not filtered by boutique)
       const { data: productsData, error: productsError } = await supabase
         .from('products')
         .select(`
@@ -60,18 +58,23 @@ export function useOfflineCache(boutiqueId?: string): UseOfflineCacheReturn {
 
       await cacheProducts(productsToCache);
 
-      // Fetch stock for this boutique
-      const { data: stockData, error: stockError } = await supabase
+      // Fetch stock - if boutiqueId is provided, filter by it; otherwise fetch all
+      let stockQuery = supabase
         .from('stock')
-        .select('product_id, quantity')
-        .eq('boutique_id', boutiqueId);
+        .select('product_id, boutique_id, quantity');
+      
+      if (boutiqueId) {
+        stockQuery = stockQuery.eq('boutique_id', boutiqueId);
+      }
+      
+      const { data: stockData, error: stockError } = await stockQuery;
 
       if (stockError) throw stockError;
 
       // Cache stock
       const stockToCache = (stockData || []).map(s => ({
         productId: s.product_id,
-        boutiqueId,
+        boutiqueId: s.boutique_id,
         quantity: s.quantity,
       }));
 
@@ -101,14 +104,12 @@ export function useOfflineCache(boutiqueId?: string): UseOfflineCacheReturn {
       // Mark as initialized
       setIsInitialized(true);
       
-      // Refresh cache if we have a boutiqueId
-      if (boutiqueId) {
-        await refreshCache();
-      }
+      // Refresh cache (works for both admins and regular users)
+      await refreshCache();
     };
 
     initCache();
-  }, [boutiqueId, loadCachedProducts, refreshCache]);
+  }, [loadCachedProducts, refreshCache]);
 
   return {
     isInitialized,
