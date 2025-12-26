@@ -15,7 +15,7 @@ import { useConnectionStatus } from '@/hooks/useConnectionStatus';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
-type PaymentMethod = 'cash' | 'card' | 'transfer' | 'check';
+type PaymentMethod = 'cash' | 'mobile_money' | 'card' | 'transfer';
 
 export default function NouvelleVente() {
   const navigate = useNavigate();

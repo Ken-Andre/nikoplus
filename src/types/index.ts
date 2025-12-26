@@ -64,7 +64,7 @@ export interface Sale {
   clientName?: string;
   clientPhone?: string;
   totalAmount: number;
-  paymentMethod: 'cash' | 'card' | 'transfer' | 'check';
+  paymentMethod: 'cash' | 'mobile_money' | 'card' | 'transfer';
   status: 'completed' | 'cancelled' | 'pending_sync';
   isSynced: boolean;
   createdAt: string;
@@ -133,7 +133,7 @@ export const SALE_STEPS: SaleStep[] = [
 
 export const PAYMENT_METHODS = [
   { id: 'cash', label: 'Espèces', icon: '💵' },
+  { id: 'mobile_money', label: 'Mobile Money', icon: '📱' },
   { id: 'card', label: 'Carte bancaire', icon: '💳' },
   { id: 'transfer', label: 'Virement', icon: '🏦' },
-  { id: 'check', label: 'Chèque', icon: '✅' },
 ] as const;
