@@ -156,7 +156,6 @@ export default function HistoriqueVentes() {
             <Input
               id="sales-search"
               name="search"
-              autoComplete="off"
               placeholder="Rechercher par référence ou client..."
               value={searchQuery}
               onChange={(e) => {

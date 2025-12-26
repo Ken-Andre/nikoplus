@@ -142,7 +142,6 @@ export function ProductSearch() {
           <Input
             id="product-search"
             name="search"
-            autoComplete="off"
             placeholder="Rechercher un produit..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}

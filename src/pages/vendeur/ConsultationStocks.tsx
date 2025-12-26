@@ -259,7 +259,6 @@ export default function ConsultationStocks() {
             <Input
               id="stock-search"
               name="search"
-              autoComplete="off"
               placeholder="Rechercher un produit..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}

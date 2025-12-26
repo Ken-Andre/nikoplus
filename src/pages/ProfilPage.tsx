@@ -337,10 +337,10 @@ export default function ProfilPage() {
                     Modifier
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent aria-describedby="password-dialog-description">
                   <DialogHeader>
                     <DialogTitle>Changer le mot de passe</DialogTitle>
-                    <DialogDescription>
+                    <DialogDescription id="password-dialog-description">
                       Entrez votre mot de passe actuel et choisissez un nouveau mot de passe
                     </DialogDescription>
                   </DialogHeader>

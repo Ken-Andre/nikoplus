@@ -11,6 +11,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from '@/components/ui/dialog';
 import {
   Select,
@@ -388,7 +389,6 @@ export default function GestionStocks() {
                 <Input
                   id="stock-search"
                   name="search"
-                  autoComplete="off"
                   placeholder="Rechercher un produit..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
@@ -558,6 +558,9 @@ export default function GestionStocks() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Ajuster le stock</DialogTitle>
+            <DialogDescription>
+              Modifiez la quantité en stock pour ce produit
+            </DialogDescription>
           </DialogHeader>
           {adjustingStock && (
             <StockAdjustmentForm
@@ -579,6 +582,9 @@ export default function GestionStocks() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Ajouter un produit au stock</DialogTitle>
+            <DialogDescription>
+              Sélectionnez un produit à ajouter au stock de cette boutique
+            </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="p-4 bg-muted rounded-lg">
