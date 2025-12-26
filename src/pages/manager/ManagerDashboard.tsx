@@ -97,6 +97,13 @@ interface DashboardStats {
   weeklyGrowth: number;
   totalProducts: number;
   activeProducts: number;
+  // Previous period comparison
+  previousPeriodSalesCount: number;
+  previousPeriodSalesAmount: number;
+  previousPeriodAvgTicket: number;
+  salesCountGrowth: number;
+  salesAmountGrowth: number;
+  avgTicketGrowth: number;
 }
 
 interface SalesEvolution {
@@ -104,7 +111,8 @@ interface SalesEvolution {
   fullDate: string;
   amount: number;
   count: number;
-  previousAmount?: number;
+  previousAmount: number;
+  previousCount: number;
 }
 
 interface PaymentDistribution {
@@ -191,11 +199,25 @@ export default function ManagerDashboard() {
     }
   };
 
+  const getPreviousPeriodRange = (currentRange: DateRange): DateRange => {
+    const periodDays = differenceInDays(currentRange.to, currentRange.from) + 1;
+    return {
+      from: subDays(currentRange.from, periodDays),
+      to: subDays(currentRange.from, 1),
+    };
+  };
+
   const getPeriodLabel = (): string => {
     if (selectedPeriod === 'custom') {
       return `${format(customDateRange.from, 'dd/MM/yyyy')} - ${format(customDateRange.to, 'dd/MM/yyyy')}`;
     }
     return periodLabels[selectedPeriod];
+  };
+
+  const getPreviousPeriodLabel = (): string => {
+    const currentRange = getDateRange();
+    const previousRange = getPreviousPeriodRange(currentRange);
+    return `${format(previousRange.from, 'dd/MM')} - ${format(previousRange.to, 'dd/MM')}`;
   };
 
   useEffect(() => {
@@ -263,6 +285,11 @@ export default function ManagerDashboard() {
       const periodEnd = endOfDay(periodRange.to).toISOString();
       const periodDays = differenceInDays(periodRange.to, periodRange.from) + 1;
       
+      // Get previous period for comparison
+      const previousPeriodRange = getPreviousPeriodRange(periodRange);
+      const previousPeriodStart = startOfDay(previousPeriodRange.from).toISOString();
+      const previousPeriodEnd = endOfDay(previousPeriodRange.to).toISOString();
+      
       // Current week and previous week (for comparison)
       const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 }).toISOString();
       const currentWeekEnd = endOfWeek(today, { weekStartsOn: 1 }).toISOString();
@@ -286,6 +313,15 @@ export default function ManagerDashboard() {
         .eq('status', 'completed')
         .gte('created_at', periodStart)
         .lte('created_at', periodEnd);
+
+      // Fetch previous period sales for comparison
+      const { data: previousPeriodSales } = await supabase
+        .from('sales')
+        .select('total_amount')
+        .eq('boutique_id', boutiqueId)
+        .eq('status', 'completed')
+        .gte('created_at', previousPeriodStart)
+        .lte('created_at', previousPeriodEnd);
 
       // Fetch current week sales
       const { data: currentWeekSales } = await supabase
@@ -344,6 +380,23 @@ export default function ManagerDashboard() {
         ? ((currentWeekAmount - previousWeekAmount) / previousWeekAmount) * 100 
         : currentWeekAmount > 0 ? 100 : 0;
 
+      // Calculate previous period stats
+      const previousPeriodAmount = previousPeriodSales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0;
+      const previousPeriodCount = previousPeriodSales?.length || 0;
+      const previousPeriodAvgTicket = previousPeriodCount > 0 ? previousPeriodAmount / previousPeriodCount : 0;
+      const currentAvgTicket = periodCount > 0 ? periodAmount / periodCount : 0;
+
+      // Calculate growth percentages
+      const salesCountGrowth = previousPeriodCount > 0 
+        ? ((periodCount - previousPeriodCount) / previousPeriodCount) * 100 
+        : periodCount > 0 ? 100 : 0;
+      const salesAmountGrowth = previousPeriodAmount > 0 
+        ? ((periodAmount - previousPeriodAmount) / previousPeriodAmount) * 100 
+        : periodAmount > 0 ? 100 : 0;
+      const avgTicketGrowth = previousPeriodAvgTicket > 0 
+        ? ((currentAvgTicket - previousPeriodAvgTicket) / previousPeriodAvgTicket) * 100 
+        : currentAvgTicket > 0 ? 100 : 0;
+
       setStats({
         dailySalesCount: dailyCount,
         dailySalesAmount: dailyAmount,
@@ -352,15 +405,21 @@ export default function ManagerDashboard() {
         outOfStockCount: outOfStock,
         lowStockCount: lowStock,
         unresolvedAlertsCount: unresolvedAlerts || 0,
-        avgTicket: periodCount > 0 ? periodAmount / periodCount : 0,
+        avgTicket: currentAvgTicket,
         currentWeekAmount,
         previousWeekAmount,
         weeklyGrowth,
         totalProducts: totalProducts || 0,
         activeProducts: activeProducts || 0,
+        previousPeriodSalesCount: previousPeriodCount,
+        previousPeriodSalesAmount: previousPeriodAmount,
+        previousPeriodAvgTicket,
+        salesCountGrowth,
+        salesAmountGrowth,
+        avgTicketGrowth,
       });
 
-      // Fetch sales evolution based on period
+      // Fetch sales evolution based on period with previous period comparison
       const evolutionDays = Math.min(periodDays, 30); // Max 30 days for chart
       const evolutionData: SalesEvolution[] = [];
       
@@ -371,6 +430,7 @@ export default function ManagerDashboard() {
         const dayStartISO = startOfDay(date).toISOString();
         const dayEndISO = endOfDay(date).toISOString();
         
+        // Current period day
         const { data: daySales } = await supabase
           .from('sales')
           .select('total_amount')
@@ -379,11 +439,26 @@ export default function ManagerDashboard() {
           .gte('created_at', dayStartISO)
           .lte('created_at', dayEndISO);
 
+        // Previous period equivalent day
+        const previousDate = subDays(date, periodDays);
+        const previousDayStartISO = startOfDay(previousDate).toISOString();
+        const previousDayEndISO = endOfDay(previousDate).toISOString();
+        
+        const { data: previousDaySales } = await supabase
+          .from('sales')
+          .select('total_amount')
+          .eq('boutique_id', boutiqueId)
+          .eq('status', 'completed')
+          .gte('created_at', previousDayStartISO)
+          .lte('created_at', previousDayEndISO);
+
         evolutionData.push({
           date: format(date, 'dd/MM', { locale: fr }),
           fullDate: format(date, 'EEEE d MMMM', { locale: fr }),
           amount: daySales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0,
           count: daySales?.length || 0,
+          previousAmount: previousDaySales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0,
+          previousCount: previousDaySales?.length || 0,
         });
       }
       setSalesEvolution(evolutionData);
@@ -532,6 +607,7 @@ export default function ManagerDashboard() {
 
   const chartConfig = {
     amount: { label: "Montant", color: "hsl(var(--primary))" },
+    previousAmount: { label: "Période préc.", color: "hsl(var(--muted-foreground))" },
     count: { label: "Ventes", color: "hsl(var(--chart-2))" },
     revenue: { label: "CA", color: "hsl(var(--primary))" },
   };
@@ -624,10 +700,10 @@ export default function ManagerDashboard() {
           </DropdownMenu>
         </div>
 
-        {/* Period Summary */}
+        {/* Period Summary with Comparison */}
         <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
           <CardContent className="py-4">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div className="flex items-center gap-3">
                 <CalendarIcon className="h-5 w-5 text-primary" />
                 <div>
@@ -638,9 +714,24 @@ export default function ManagerDashboard() {
                 </div>
               </div>
               {!isLoading && stats && (
-                <div className="text-right">
-                  <p className="text-2xl font-bold text-primary">{stats.monthlySalesCount} ventes</p>
-                  <p className="text-sm text-muted-foreground">{stats.monthlySalesAmount.toLocaleString('fr-FR')} XAF</p>
+                <div className="flex items-center gap-6">
+                  {/* Current Period */}
+                  <div className="text-right">
+                    <p className="text-xs text-muted-foreground">Période actuelle</p>
+                    <p className="text-2xl font-bold text-primary">{stats.monthlySalesCount} ventes</p>
+                    <p className="text-sm text-muted-foreground">{stats.monthlySalesAmount.toLocaleString('fr-FR')} XAF</p>
+                  </div>
+                  {/* Previous Period */}
+                  <div className="text-right border-l pl-6">
+                    <p className="text-xs text-muted-foreground">Période précédente ({getPreviousPeriodLabel()})</p>
+                    <p className="text-lg font-semibold text-muted-foreground">{stats.previousPeriodSalesCount} ventes</p>
+                    <p className="text-sm text-muted-foreground">{stats.previousPeriodSalesAmount.toLocaleString('fr-FR')} XAF</p>
+                  </div>
+                  {/* Growth Indicator */}
+                  <div className={`flex items-center gap-1 px-3 py-2 rounded-lg ${stats.salesAmountGrowth >= 0 ? 'bg-success/10 text-success' : 'bg-destructive/10 text-destructive'}`}>
+                    {stats.salesAmountGrowth >= 0 ? <ArrowUpRight className="h-5 w-5" /> : <ArrowDownRight className="h-5 w-5" />}
+                    <span className="text-lg font-bold">{stats.salesAmountGrowth > 0 ? '+' : ''}{stats.salesAmountGrowth.toFixed(1)}%</span>
+                  </div>
                 </div>
               )}
             </div>
@@ -673,20 +764,26 @@ export default function ManagerDashboard() {
                 subtitle={`${(stats?.monthlySalesAmount || 0).toLocaleString('fr-FR')} XAF`}
                 icon={TrendingUp}
                 color="text-success"
+                trend={stats?.salesCountGrowth}
+                trendValue={`vs ${stats?.previousPeriodSalesCount || 0} préc.`}
               />
               <StatCard
-                title="Croissance hebdo"
-                value={`${stats?.weeklyGrowth ? (stats.weeklyGrowth > 0 ? '+' : '') + stats.weeklyGrowth.toFixed(1) : 0}%`}
-                subtitle={`${(stats?.currentWeekAmount || 0).toLocaleString('fr-FR')} XAF cette semaine`}
-                icon={stats?.weeklyGrowth && stats.weeklyGrowth >= 0 ? TrendingUp : TrendingDown}
-                color={stats?.weeklyGrowth && stats.weeklyGrowth >= 0 ? 'text-success' : 'text-destructive'}
+                title="Chiffre d'affaires"
+                value={`${((stats?.monthlySalesAmount || 0) / 1000).toFixed(0)}k XAF`}
+                subtitle={`Préc: ${((stats?.previousPeriodSalesAmount || 0) / 1000).toFixed(0)}k XAF`}
+                icon={stats?.salesAmountGrowth && stats.salesAmountGrowth >= 0 ? TrendingUp : TrendingDown}
+                color={stats?.salesAmountGrowth && stats.salesAmountGrowth >= 0 ? 'text-success' : 'text-destructive'}
+                trend={stats?.salesAmountGrowth}
+                trendValue="vs période préc."
               />
               <StatCard
                 title="Panier moyen"
                 value={`${(stats?.avgTicket || 0).toLocaleString('fr-FR')} XAF`}
-                subtitle={`Sur la période sélectionnée`}
+                subtitle={`Préc: ${(stats?.previousPeriodAvgTicket || 0).toLocaleString('fr-FR')} XAF`}
                 icon={Target}
                 color="text-info"
+                trend={stats?.avgTicketGrowth}
+                trendValue="vs période préc."
               />
             </>
           )}
@@ -760,6 +857,10 @@ export default function ManagerDashboard() {
                         <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3}/>
                         <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0}/>
                       </linearGradient>
+                      <linearGradient id="previousGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0.15}/>
+                        <stop offset="95%" stopColor="hsl(var(--muted-foreground))" stopOpacity={0}/>
+                      </linearGradient>
                     </defs>
                     <CartesianGrid strokeDasharray="3 3" className="stroke-muted" />
                     <XAxis dataKey="date" className="text-xs" />
@@ -769,11 +870,24 @@ export default function ManagerDashboard() {
                       content={({ active, payload, label }) => {
                         if (active && payload && payload.length) {
                           const data = payload[0].payload as SalesEvolution;
+                          const growth = data.previousAmount > 0 
+                            ? ((data.amount - data.previousAmount) / data.previousAmount * 100).toFixed(1)
+                            : data.amount > 0 ? '+100' : '0';
                           return (
                             <div className="rounded-lg border bg-background p-3 shadow-lg">
                               <p className="font-medium capitalize">{data.fullDate}</p>
-                              <p className="text-primary">{Number(payload[0].value).toLocaleString('fr-FR')} XAF</p>
-                              <p className="text-muted-foreground text-sm">{data.count} vente(s)</p>
+                              <div className="mt-2 space-y-1">
+                                <p className="text-primary font-semibold">{data.amount.toLocaleString('fr-FR')} XAF</p>
+                                <p className="text-muted-foreground text-sm">{data.count} vente(s)</p>
+                              </div>
+                              <div className="mt-2 pt-2 border-t space-y-1">
+                                <p className="text-xs text-muted-foreground">Période précédente :</p>
+                                <p className="text-muted-foreground">{data.previousAmount.toLocaleString('fr-FR')} XAF</p>
+                                <p className="text-muted-foreground text-sm">{data.previousCount} vente(s)</p>
+                              </div>
+                              <div className={`mt-2 pt-2 border-t text-sm font-medium ${Number(growth) >= 0 ? 'text-success' : 'text-destructive'}`}>
+                                {Number(growth) >= 0 ? '↑' : '↓'} {growth}% vs période préc.
+                              </div>
                             </div>
                           );
                         }
@@ -781,6 +895,9 @@ export default function ManagerDashboard() {
                       }}
                     />
                     <Legend />
+                    {/* Previous period area (background) */}
+                    <Area yAxisId="amount" type="monotone" dataKey="previousAmount" name="Période préc. (XAF)" fill="url(#previousGradient)" stroke="hsl(var(--muted-foreground))" strokeWidth={1} strokeDasharray="4 4" />
+                    {/* Current period area */}
                     <Area yAxisId="amount" type="monotone" dataKey="amount" name="Montant (XAF)" fill="url(#amountGradient)" stroke="hsl(var(--primary))" strokeWidth={2} />
                     <Line yAxisId="count" type="monotone" dataKey="count" name="Nb ventes" stroke="hsl(var(--chart-2))" strokeWidth={2} dot={{ fill: 'hsl(var(--chart-2))' }} />
                   </ComposedChart>
