@@ -242,7 +242,7 @@ export default function GestionUtilisateurs() {
             first_name: formData.firstName,
             last_name: formData.lastName,
             phone: formData.phone,
-            boutique_id: formData.boutiqueId || null,
+            boutique_id: formData.boutiqueId && formData.boutiqueId !== 'none' ? formData.boutiqueId : null,
           })
           .eq('id', selectedUser.id);
 
@@ -293,7 +293,7 @@ export default function GestionUtilisateurs() {
             .from('profiles')
             .update({
               phone: formData.phone,
-              boutique_id: formData.boutiqueId || null,
+              boutique_id: formData.boutiqueId && formData.boutiqueId !== 'none' ? formData.boutiqueId : null,
             })
             .eq('id', authData.user.id);
 
@@ -599,7 +599,7 @@ export default function GestionUtilisateurs() {
                   <SelectValue placeholder="Sélectionner une boutique" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Aucune boutique</SelectItem>
+                  <SelectItem value="none">Aucune boutique</SelectItem>
                   {boutiques.map((b) => (
                     <SelectItem key={b.id} value={b.id}>
                       {b.name}
