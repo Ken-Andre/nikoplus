@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { 
   ShoppingCart, 
@@ -6,21 +7,72 @@ import {
   User,
   TrendingUp,
   Clock,
+  Store,
+  Loader2,
 } from 'lucide-react';
 import { AppLayout } from '@/components/AppLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { format } from 'date-fns';
+import { fr } from 'date-fns/locale';
+
+interface TodayStats {
+  salesCount: number;
+  totalAmount: number;
+  lastSaleTime: string | null;
+}
 
 export default function VendeurAccueil() {
   const { user } = useAuth();
-
-  // TODO: Fetch real data
-  const todayStats = {
+  const [stats, setStats] = useState<TodayStats>({
     salesCount: 0,
     totalAmount: 0,
-    lastSaleTime: null as string | null,
-  };
+    lastSaleTime: null,
+  });
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTodayStats = async () => {
+      if (!user?.id) return;
+
+      try {
+        // Get start of today
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const todayISO = today.toISOString();
+
+        // Fetch today's sales for current user
+        const { data: sales, error } = await supabase
+          .from('sales')
+          .select('id, total_amount, created_at')
+          .eq('seller_id', user.id)
+          .gte('created_at', todayISO)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        const salesCount = sales?.length || 0;
+        const totalAmount = sales?.reduce((sum, sale) => sum + Number(sale.total_amount), 0) || 0;
+        const lastSaleTime = sales?.[0]?.created_at 
+          ? format(new Date(sales[0].created_at), 'HH:mm', { locale: fr })
+          : null;
+
+        setStats({
+          salesCount,
+          totalAmount,
+          lastSaleTime,
+        });
+      } catch (error) {
+        console.error('Error fetching stats:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTodayStats();
+  }, [user?.id]);
 
   return (
     <AppLayout title="Accueil">
@@ -30,8 +82,9 @@ export default function VendeurAccueil() {
           <h2 className="text-2xl font-display font-bold text-foreground">
             Bonjour, {user?.firstName || 'Vendeur'} 👋
           </h2>
-          <p className="text-muted-foreground">
-            Bienvenue sur votre espace de vente
+          <p className="text-muted-foreground flex items-center gap-2">
+            <Store className="h-4 w-4" />
+            {user?.boutiqueName || 'Boutique non assignée'}
           </p>
         </div>
 
@@ -60,9 +113,13 @@ export default function VendeurAccueil() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-foreground">
-                {todayStats.salesCount}
-              </p>
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              ) : (
+                <p className="text-3xl font-bold text-foreground">
+                  {stats.salesCount}
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -74,9 +131,13 @@ export default function VendeurAccueil() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-3xl font-bold text-foreground">
-                {todayStats.totalAmount.toLocaleString('fr-FR')} XAF
-              </p>
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              ) : (
+                <p className="text-3xl font-bold text-success">
+                  {stats.totalAmount.toLocaleString('fr-FR')} <span className="text-lg font-normal">XAF</span>
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -88,9 +149,13 @@ export default function VendeurAccueil() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-lg font-medium text-foreground">
-                {todayStats.lastSaleTime || 'Aucune vente'}
-              </p>
+              {isLoading ? (
+                <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+              ) : (
+                <p className="text-lg font-medium text-foreground">
+                  {stats.lastSaleTime ? `Aujourd'hui à ${stats.lastSaleTime}` : 'Aucune vente'}
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
