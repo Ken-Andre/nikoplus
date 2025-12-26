@@ -615,32 +615,34 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
           <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Users className="h-5 w-5 text-primary" />
-                Gestion des utilisateurs
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Users className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <span className="truncate">Gestion des utilisateurs</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-4 text-sm text-muted-foreground">
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground line-clamp-2">
                 Créer des comptes, attribuer des rôles et gérer les accès des utilisateurs.
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col xs:flex-row gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  size="sm"
+                  className="flex-1 text-xs sm:text-sm h-9 sm:h-10"
                   onClick={() => navigate('/admin/utilisateurs')}
                 >
                   Voir tous
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
                 <Button
-                  className="flex-1"
+                  size="sm"
+                  className="flex-1 text-xs sm:text-sm h-9 sm:h-10"
                   onClick={() => navigate('/admin/utilisateurs?action=create')}
                 >
-                  <UserPlus className="mr-2 h-4 w-4" />
+                  <UserPlus className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   Nouveau
                 </Button>
               </div>
@@ -648,54 +650,57 @@ export default function AdminDashboard() {
           </Card>
 
           <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <Store className="h-5 w-5 text-primary" />
-                Gestion des boutiques
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Store className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <span className="truncate">Gestion des boutiques</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-4 text-sm text-muted-foreground">
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground line-clamp-2">
                 Ajouter, modifier ou supprimer des boutiques du réseau.
               </p>
-              <div className="flex gap-2">
+              <div className="flex flex-col xs:flex-row gap-2">
                 <Button
                   variant="outline"
-                  className="flex-1"
+                  size="sm"
+                  className="flex-1 text-xs sm:text-sm h-9 sm:h-10"
                   onClick={() => navigate('/admin/boutiques')}
                 >
                   Voir toutes
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                 </Button>
                 <Button
-                  className="flex-1"
+                  size="sm"
+                  className="flex-1 text-xs sm:text-sm h-9 sm:h-10"
                   onClick={() => navigate('/admin/boutiques?action=create')}
                 >
-                  <Building2 className="mr-2 h-4 w-4" />
+                  <Building2 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                   Nouvelle
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="hover:shadow-md transition-shadow">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-lg">
-                <TrendingUp className="h-5 w-5 text-primary" />
-                Rapports globaux
+          <Card className="hover:shadow-md transition-shadow md:col-span-2 xl:col-span-1">
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-primary flex-shrink-0" />
+                <span className="truncate">Rapports globaux</span>
               </CardTitle>
             </CardHeader>
-            <CardContent>
-              <p className="mb-4 text-sm text-muted-foreground">
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <p className="mb-3 sm:mb-4 text-xs sm:text-sm text-muted-foreground line-clamp-2">
                 Consulter les rapports consolidés de toutes les boutiques.
               </p>
               <Button
                 variant="outline"
-                className="w-full"
+                size="sm"
+                className="w-full text-xs sm:text-sm h-9 sm:h-10"
                 onClick={() => navigate('/admin/rapports')}
               >
                 Voir les rapports
-                <ArrowRight className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
               </Button>
             </CardContent>
           </Card>
@@ -704,36 +709,36 @@ export default function AdminDashboard() {
         {/* Users by Role breakdown */}
         {!isLoading && stats && (
           <Card>
-            <CardHeader>
-              <CardTitle>Répartition des utilisateurs par rôle</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-base sm:text-lg">Répartition des utilisateurs par rôle</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-3">
-                <div className="flex items-center gap-4 rounded-lg border p-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
-                    <Users className="h-6 w-6 text-red-600 dark:text-red-400" />
+            <CardContent className="p-4 pt-0 sm:p-6 sm:pt-0">
+              <div className="grid gap-3 sm:gap-4 grid-cols-1 xs:grid-cols-3">
+                <div className="flex items-center gap-3 sm:gap-4 rounded-lg border p-3 sm:p-4">
+                  <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20 flex-shrink-0">
+                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-red-600 dark:text-red-400" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.usersByRole.admin}</p>
-                    <p className="text-sm text-muted-foreground">Administrateurs</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 rounded-lg border p-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20">
-                    <Users className="h-6 w-6 text-blue-600 dark:text-blue-400" />
-                  </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.usersByRole.manager}</p>
-                    <p className="text-sm text-muted-foreground">Managers</p>
+                  <div className="min-w-0">
+                    <p className="text-xl sm:text-2xl font-bold">{stats.usersByRole.admin}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">Administrateurs</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4 rounded-lg border p-4">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20">
-                    <Users className="h-6 w-6 text-green-600 dark:text-green-400" />
+                <div className="flex items-center gap-3 sm:gap-4 rounded-lg border p-3 sm:p-4">
+                  <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/20 flex-shrink-0">
+                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400" />
                   </div>
-                  <div>
-                    <p className="text-2xl font-bold">{stats.usersByRole.seller}</p>
-                    <p className="text-sm text-muted-foreground">Vendeurs</p>
+                  <div className="min-w-0">
+                    <p className="text-xl sm:text-2xl font-bold">{stats.usersByRole.manager}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">Managers</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 sm:gap-4 rounded-lg border p-3 sm:p-4">
+                  <div className="flex h-10 w-10 sm:h-12 sm:w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/20 flex-shrink-0">
+                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-green-600 dark:text-green-400" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-xl sm:text-2xl font-bold">{stats.usersByRole.seller}</p>
+                    <p className="text-xs sm:text-sm text-muted-foreground truncate">Vendeurs</p>
                   </div>
                 </div>
               </div>
