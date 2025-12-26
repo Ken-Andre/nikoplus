@@ -14,15 +14,25 @@ import {
   Percent,
   Users,
   Target,
+  FileSpreadsheet,
+  FileText,
+  Download,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useExportReports } from '@/hooks/useExportReports';
 import { AppLayout } from '@/components/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   ChartContainer,
   ChartTooltip,
@@ -115,6 +125,7 @@ const paymentLabels: Record<string, string> = {
 export default function ManagerDashboard() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { exportToExcel, exportToPDF } = useExportReports();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [salesEvolution, setSalesEvolution] = useState<SalesEvolution[]>([]);
   const [paymentDistribution, setPaymentDistribution] = useState<PaymentDistribution[]>([]);
@@ -122,12 +133,30 @@ export default function ManagerDashboard() {
   const [categoryStats, setCategoryStats] = useState<CategoryStats[]>([]);
   const [hourlyDistribution, setHourlyDistribution] = useState<HourlyDistribution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [boutiqueName, setBoutiqueName] = useState<string>('');
 
   useEffect(() => {
     if (user) {
       fetchDashboardData();
     }
   }, [user]);
+
+  const handleExport = (type: 'excel' | 'pdf') => {
+    const exportData = {
+      stats,
+      salesEvolution,
+      categoryStats,
+      topProducts,
+      paymentDistribution,
+      hourlyDistribution,
+    };
+
+    if (type === 'excel') {
+      exportToExcel(exportData, boutiqueName);
+    } else {
+      exportToPDF(exportData, boutiqueName);
+    }
+  };
 
   const fetchDashboardData = async () => {
     if (!user) return;
@@ -136,11 +165,12 @@ export default function ManagerDashboard() {
     try {
       const { data: profile } = await supabase
         .from('profiles')
-        .select('boutique_id')
+        .select('boutique_id, boutiques(name)')
         .eq('id', user.id)
         .maybeSingle();
 
       const boutiqueId = profile?.boutique_id;
+      setBoutiqueName((profile?.boutiques as any)?.name || 'Boutique');
       const today = new Date();
       const dayStart = startOfDay(today).toISOString();
       const dayEnd = endOfDay(today).toISOString();
@@ -415,6 +445,27 @@ export default function ManagerDashboard() {
   return (
     <AppLayout title="Tableau de Bord Manager">
       <div className="space-y-6">
+        {/* Export Actions */}
+        <div className="flex justify-end">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" disabled={isLoading}>
+                <Download className="h-4 w-4 mr-2" />
+                Exporter le rapport
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => handleExport('excel')}>
+                <FileSpreadsheet className="h-4 w-4 mr-2 text-green-600" />
+                Exporter en Excel (.xlsx)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleExport('pdf')}>
+                <FileText className="h-4 w-4 mr-2 text-red-600" />
+                Exporter en PDF
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
         {/* KPI Cards - Extended */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
