@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { format, startOfDay, endOfDay, startOfMonth, subDays, subWeeks, startOfWeek, endOfWeek } from 'date-fns';
+import { format, startOfDay, endOfDay, startOfMonth, endOfMonth, subDays, subWeeks, startOfWeek, endOfWeek, subMonths, isAfter, isBefore, differenceInDays } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import {
   TrendingUp,
@@ -17,6 +17,8 @@ import {
   FileSpreadsheet,
   FileText,
   Download,
+  Calendar as CalendarIcon,
+  ChevronDown,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,12 +29,19 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
+import { Calendar } from '@/components/ui/calendar';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
 import {
   ChartContainer,
   ChartTooltip,
@@ -56,6 +65,23 @@ import {
   Area,
   ComposedChart,
 } from 'recharts';
+import { cn } from '@/lib/utils';
+
+type PeriodType = 'today' | 'yesterday' | 'week' | 'month' | 'last_month' | 'custom';
+
+interface DateRange {
+  from: Date;
+  to: Date;
+}
+
+const periodLabels: Record<PeriodType, string> = {
+  today: "Aujourd'hui",
+  yesterday: 'Hier',
+  week: 'Cette semaine',
+  month: 'Ce mois',
+  last_month: 'Mois dernier',
+  custom: 'Période personnalisée',
+};
 
 interface DashboardStats {
   dailySalesCount: number;
@@ -134,12 +160,68 @@ export default function ManagerDashboard() {
   const [hourlyDistribution, setHourlyDistribution] = useState<HourlyDistribution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [boutiqueName, setBoutiqueName] = useState<string>('');
+  
+  // Period filter state
+  const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>('month');
+  const [customDateRange, setCustomDateRange] = useState<DateRange>({
+    from: startOfMonth(new Date()),
+    to: new Date(),
+  });
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
+
+  const getDateRange = (): DateRange => {
+    const today = new Date();
+    switch (selectedPeriod) {
+      case 'today':
+        return { from: startOfDay(today), to: endOfDay(today) };
+      case 'yesterday':
+        const yesterday = subDays(today, 1);
+        return { from: startOfDay(yesterday), to: endOfDay(yesterday) };
+      case 'week':
+        return { from: startOfWeek(today, { weekStartsOn: 1 }), to: endOfWeek(today, { weekStartsOn: 1 }) };
+      case 'month':
+        return { from: startOfMonth(today), to: endOfMonth(today) };
+      case 'last_month':
+        const lastMonth = subMonths(today, 1);
+        return { from: startOfMonth(lastMonth), to: endOfMonth(lastMonth) };
+      case 'custom':
+        return customDateRange;
+      default:
+        return { from: startOfMonth(today), to: endOfMonth(today) };
+    }
+  };
+
+  const getPeriodLabel = (): string => {
+    if (selectedPeriod === 'custom') {
+      return `${format(customDateRange.from, 'dd/MM/yyyy')} - ${format(customDateRange.to, 'dd/MM/yyyy')}`;
+    }
+    return periodLabels[selectedPeriod];
+  };
 
   useEffect(() => {
     if (user) {
       fetchDashboardData();
     }
-  }, [user]);
+  }, [user, selectedPeriod, customDateRange]);
+
+  const handlePeriodChange = (period: PeriodType) => {
+    setSelectedPeriod(period);
+    if (period !== 'custom') {
+      setIsCalendarOpen(false);
+    }
+  };
+
+  const handleCustomDateSelect = (range: { from?: Date; to?: Date } | undefined) => {
+    if (range?.from) {
+      setCustomDateRange({
+        from: range.from,
+        to: range.to || range.from,
+      });
+      if (range.to) {
+        setIsCalendarOpen(false);
+      }
+    }
+  };
 
   const handleExport = (type: 'excel' | 'pdf') => {
     const exportData = {
@@ -174,15 +256,20 @@ export default function ManagerDashboard() {
       const today = new Date();
       const dayStart = startOfDay(today).toISOString();
       const dayEnd = endOfDay(today).toISOString();
-      const monthStart = startOfMonth(today).toISOString();
       
-      // Current week and previous week
+      // Get selected period date range
+      const periodRange = getDateRange();
+      const periodStart = startOfDay(periodRange.from).toISOString();
+      const periodEnd = endOfDay(periodRange.to).toISOString();
+      const periodDays = differenceInDays(periodRange.to, periodRange.from) + 1;
+      
+      // Current week and previous week (for comparison)
       const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 }).toISOString();
       const currentWeekEnd = endOfWeek(today, { weekStartsOn: 1 }).toISOString();
       const previousWeekStart = startOfWeek(subWeeks(today, 1), { weekStartsOn: 1 }).toISOString();
       const previousWeekEnd = endOfWeek(subWeeks(today, 1), { weekStartsOn: 1 }).toISOString();
 
-      // Fetch daily sales
+      // Fetch daily sales (always today for quick reference)
       const { data: dailySales } = await supabase
         .from('sales')
         .select('total_amount')
@@ -191,13 +278,14 @@ export default function ManagerDashboard() {
         .gte('created_at', dayStart)
         .lte('created_at', dayEnd);
 
-      // Fetch monthly sales
-      const { data: monthlySales } = await supabase
+      // Fetch period sales (based on selected period)
+      const { data: periodSales } = await supabase
         .from('sales')
         .select('total_amount')
         .eq('boutique_id', boutiqueId)
         .eq('status', 'completed')
-        .gte('created_at', monthStart);
+        .gte('created_at', periodStart)
+        .lte('created_at', periodEnd);
 
       // Fetch current week sales
       const { data: currentWeekSales } = await supabase
@@ -248,7 +336,8 @@ export default function ManagerDashboard() {
 
       const dailyAmount = dailySales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0;
       const dailyCount = dailySales?.length || 0;
-      const monthlyAmount = monthlySales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0;
+      const periodAmount = periodSales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0;
+      const periodCount = periodSales?.length || 0;
       const currentWeekAmount = currentWeekSales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0;
       const previousWeekAmount = previousWeekSales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0;
       const weeklyGrowth = previousWeekAmount > 0 
@@ -258,12 +347,12 @@ export default function ManagerDashboard() {
       setStats({
         dailySalesCount: dailyCount,
         dailySalesAmount: dailyAmount,
-        monthlySalesCount: monthlySales?.length || 0,
-        monthlySalesAmount: monthlyAmount,
+        monthlySalesCount: periodCount,
+        monthlySalesAmount: periodAmount,
         outOfStockCount: outOfStock,
         lowStockCount: lowStock,
         unresolvedAlertsCount: unresolvedAlerts || 0,
-        avgTicket: dailyCount > 0 ? dailyAmount / dailyCount : 0,
+        avgTicket: periodCount > 0 ? periodAmount / periodCount : 0,
         currentWeekAmount,
         previousWeekAmount,
         weeklyGrowth,
@@ -271,38 +360,42 @@ export default function ManagerDashboard() {
         activeProducts: activeProducts || 0,
       });
 
-      // Fetch sales evolution (last 14 days with comparison)
-      const last14Days = Array.from({ length: 14 }, (_, i) => {
-        const date = subDays(today, 13 - i);
-        return { date, start: startOfDay(date).toISOString(), end: endOfDay(date).toISOString() };
-      });
-
+      // Fetch sales evolution based on period
+      const evolutionDays = Math.min(periodDays, 30); // Max 30 days for chart
       const evolutionData: SalesEvolution[] = [];
-      for (const day of last14Days) {
+      
+      for (let i = 0; i < evolutionDays; i++) {
+        const date = subDays(periodRange.to, evolutionDays - 1 - i);
+        if (isBefore(date, periodRange.from)) continue;
+        
+        const dayStartISO = startOfDay(date).toISOString();
+        const dayEndISO = endOfDay(date).toISOString();
+        
         const { data: daySales } = await supabase
           .from('sales')
           .select('total_amount')
           .eq('boutique_id', boutiqueId)
           .eq('status', 'completed')
-          .gte('created_at', day.start)
-          .lte('created_at', day.end);
+          .gte('created_at', dayStartISO)
+          .lte('created_at', dayEndISO);
 
         evolutionData.push({
-          date: format(day.date, 'dd/MM', { locale: fr }),
-          fullDate: format(day.date, 'EEEE d MMMM', { locale: fr }),
+          date: format(date, 'dd/MM', { locale: fr }),
+          fullDate: format(date, 'EEEE d MMMM', { locale: fr }),
           amount: daySales?.reduce((sum, s) => sum + Number(s.total_amount), 0) || 0,
           count: daySales?.length || 0,
         });
       }
       setSalesEvolution(evolutionData);
 
-      // Fetch payment distribution
+      // Fetch payment distribution for selected period
       const { data: paymentData } = await supabase
         .from('sales')
         .select('payment_method, total_amount')
         .eq('boutique_id', boutiqueId)
         .eq('status', 'completed')
-        .gte('created_at', monthStart);
+        .gte('created_at', periodStart)
+        .lte('created_at', periodEnd);
 
       const paymentMap = new Map<string, { count: number; amount: number }>();
       paymentData?.forEach(sale => {
@@ -321,13 +414,14 @@ export default function ManagerDashboard() {
         }))
       );
 
-      // Fetch top 5 products
+      // Fetch top 5 products for selected period
       const { data: saleItems } = await supabase
         .from('sale_items')
         .select('product_name, quantity, total_price, product_id, sales!inner(boutique_id, status, created_at)')
         .eq('sales.boutique_id', boutiqueId)
         .eq('sales.status', 'completed')
-        .gte('sales.created_at', monthStart);
+        .gte('sales.created_at', periodStart)
+        .lte('sales.created_at', periodEnd);
 
       const productMap = new Map<string, { quantity: number; revenue: number }>();
       saleItems?.forEach(item => {
@@ -445,8 +539,71 @@ export default function ManagerDashboard() {
   return (
     <AppLayout title="Tableau de Bord Manager">
       <div className="space-y-6">
-        {/* Export Actions */}
-        <div className="flex justify-end">
+        {/* Period Filter & Export Actions */}
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          {/* Period Selector */}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Période :</span>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="min-w-[180px] justify-between">
+                  <div className="flex items-center gap-2">
+                    <CalendarIcon className="h-4 w-4" />
+                    <span>{getPeriodLabel()}</span>
+                  </div>
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-56">
+                <DropdownMenuItem onClick={() => handlePeriodChange('today')}>
+                  Aujourd'hui
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePeriodChange('yesterday')}>
+                  Hier
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePeriodChange('week')}>
+                  Cette semaine
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePeriodChange('month')}>
+                  Ce mois
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => handlePeriodChange('last_month')}>
+                  Mois dernier
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => {
+                  setSelectedPeriod('custom');
+                  setIsCalendarOpen(true);
+                }}>
+                  Période personnalisée...
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Custom Date Range Picker */}
+            {selectedPeriod === 'custom' && (
+              <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" size="icon">
+                    <CalendarIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="range"
+                    selected={{ from: customDateRange.from, to: customDateRange.to }}
+                    onSelect={handleCustomDateSelect}
+                    numberOfMonths={2}
+                    disabled={(date) => isAfter(date, new Date())}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
+
+          {/* Export Button */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" disabled={isLoading}>
@@ -466,6 +623,30 @@ export default function ManagerDashboard() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
+
+        {/* Period Summary */}
+        <Card className="bg-gradient-to-r from-primary/5 to-primary/10 border-primary/20">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CalendarIcon className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm font-medium">Période sélectionnée : {getPeriodLabel()}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {format(getDateRange().from, 'EEEE d MMMM yyyy', { locale: fr })} - {format(getDateRange().to, 'EEEE d MMMM yyyy', { locale: fr })}
+                  </p>
+                </div>
+              </div>
+              {!isLoading && stats && (
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-primary">{stats.monthlySalesCount} ventes</p>
+                  <p className="text-sm text-muted-foreground">{stats.monthlySalesAmount.toLocaleString('fr-FR')} XAF</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
         {/* KPI Cards - Extended */}
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           {isLoading ? (
@@ -487,7 +668,7 @@ export default function ManagerDashboard() {
                 color="text-primary"
               />
               <StatCard
-                title="Ventes du mois"
+                title={`Ventes (${getPeriodLabel()})`}
                 value={stats?.monthlySalesCount || 0}
                 subtitle={`${(stats?.monthlySalesAmount || 0).toLocaleString('fr-FR')} XAF`}
                 icon={TrendingUp}
@@ -503,7 +684,7 @@ export default function ManagerDashboard() {
               <StatCard
                 title="Panier moyen"
                 value={`${(stats?.avgTicket || 0).toLocaleString('fr-FR')} XAF`}
-                subtitle={`${stats?.dailySalesCount || 0} ventes aujourd'hui`}
+                subtitle={`Sur la période sélectionnée`}
                 icon={Target}
                 color="text-info"
               />
@@ -564,9 +745,9 @@ export default function ManagerDashboard() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <TrendingUp className="h-5 w-5 text-primary" />
-                Évolution des ventes (14 jours)
+                Évolution des ventes ({getPeriodLabel()})
               </CardTitle>
-              <CardDescription>Montant et nombre de ventes par jour</CardDescription>
+              <CardDescription>Montant et nombre de ventes par jour sur la période</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -615,7 +796,7 @@ export default function ManagerDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Ventes par catégorie</CardTitle>
-              <CardDescription>Répartition du chiffre d'affaires ce mois</CardDescription>
+              <CardDescription>Répartition du CA - {getPeriodLabel()}</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -660,7 +841,7 @@ export default function ManagerDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Répartition par paiement</CardTitle>
-              <CardDescription>Modes de paiement ce mois</CardDescription>
+              <CardDescription>Modes de paiement - {getPeriodLabel()}</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoading ? (
@@ -764,7 +945,7 @@ export default function ManagerDashboard() {
             <CardHeader className="flex flex-row items-center justify-between">
               <div>
                 <CardTitle>Top 5 Produits</CardTitle>
-                <CardDescription>Par chiffre d'affaires ce mois</CardDescription>
+                <CardDescription>Par CA - {getPeriodLabel()}</CardDescription>
               </div>
               <Button variant="ghost" size="sm" onClick={() => navigate('/manager/produits')}>
                 Voir tout <ArrowRight className="ml-1 h-4 w-4" />
