@@ -44,15 +44,13 @@ const sellerNavItems = [
 
 const adminNavItems = [
   { title: 'Tableau de Bord', url: '/admin/dashboard', icon: LayoutDashboard },
+  { title: 'Utilisateurs', url: '/admin/utilisateurs', icon: Users },
+  { title: 'Boutiques', url: '/admin/boutiques', icon: Store },
   { title: 'Produits', url: '/manager/produits', icon: Package },
   { title: 'Catégories', url: '/manager/categories', icon: FolderOpen },
   { title: 'Stocks', url: '/manager/stocks', icon: Boxes },
-  { title: 'Ventes', url: '/admin/ventes', icon: ShoppingCart },
-  { title: 'Utilisateurs', url: '/admin/utilisateurs', icon: Users },
-  { title: 'Fournisseurs', url: '/admin/fournisseurs', icon: Truck },
-  { title: 'Alertes', url: '/admin/alertes', icon: Bell },
-  { title: 'Rapports', url: '/admin/rapports', icon: FileText },
-  { title: 'Paramètres', url: '/admin/parametres', icon: Settings },
+  { title: 'Fournisseurs', url: '/manager/fournisseurs', icon: Truck },
+  { title: 'Alertes', url: '/manager/alertes', icon: Bell },
 ];
 
 const managerNavItems = [
