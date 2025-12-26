@@ -137,7 +137,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .update({
         first_name: data.firstName,
         last_name: data.lastName,
-        phone: data.avatarUrl,
+        phone: data.phone,
+        avatar_url: data.avatarUrl,
         boutique_id: data.boutiqueId,
       })
       .eq('id', user.id);
