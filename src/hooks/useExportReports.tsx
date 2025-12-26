@@ -48,6 +48,11 @@ interface ExportData {
 }
 
 export function useExportReports() {
+  // Fonction de formatage personnalisée pour les montants (évite les espaces insécables qui posent problème avec jsPDF)
+  const formatAmount = (value: number): string => {
+    return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  };
+
   const exportToExcel = useCallback((data: ExportData, boutiqueName?: string) => {
     const workbook = XLSX.utils.book_new();
     const today = format(new Date(), 'dd-MM-yyyy', { locale: fr });
@@ -156,9 +161,9 @@ export function useExportReports() {
       startY: yPos,
       head: [['Indicateur', 'Valeur']],
       body: [
-        ['Ventes du jour', `${data.stats?.dailySalesCount || 0} (${(data.stats?.dailySalesAmount || 0).toLocaleString('fr-FR')} XAF)`],
-        ['Ventes du mois', `${data.stats?.monthlySalesCount || 0} (${(data.stats?.monthlySalesAmount || 0).toLocaleString('fr-FR')} XAF)`],
-        ['Panier moyen', `${(data.stats?.avgTicket || 0).toLocaleString('fr-FR')} XAF`],
+        ['Ventes du jour', `${data.stats?.dailySalesCount || 0} (${formatAmount(data.stats?.dailySalesAmount || 0)} XAF)`],
+        ['Ventes du mois', `${data.stats?.monthlySalesCount || 0} (${formatAmount(data.stats?.monthlySalesAmount || 0)} XAF)`],
+        ['Panier moyen', `${formatAmount(data.stats?.avgTicket || 0)} XAF`],
         ['Croissance hebdo', `${data.stats?.weeklyGrowth?.toFixed(1) || 0}%`],
         ['Ruptures de stock', `${data.stats?.outOfStockCount || 0}`],
         ['Produits en alerte', `${data.stats?.lowStockCount || 0}`],
@@ -181,7 +186,7 @@ export function useExportReports() {
       body: data.topProducts.map(p => [
         p.name,
         p.quantity.toString(),
-        p.revenue.toLocaleString('fr-FR')
+        formatAmount(p.revenue)
       ]),
       theme: 'striped',
       headStyles: { fillColor: [59, 130, 246] },
@@ -202,7 +207,7 @@ export function useExportReports() {
         body: data.categoryStats.map(c => [
           c.name,
           c.count.toString(),
-          c.revenue.toLocaleString('fr-FR')
+          formatAmount(c.revenue)
         ]),
         theme: 'striped',
         headStyles: { fillColor: [59, 130, 246] },
@@ -230,7 +235,7 @@ export function useExportReports() {
         body: data.paymentDistribution.map(p => [
           p.method,
           p.count.toString(),
-          p.amount.toLocaleString('fr-FR')
+          formatAmount(p.amount)
         ]),
         theme: 'striped',
         headStyles: { fillColor: [59, 130, 246] },
@@ -254,7 +259,7 @@ export function useExportReports() {
       body: data.salesEvolution.map(s => [
         s.fullDate,
         s.count.toString(),
-        s.amount.toLocaleString('fr-FR')
+        formatAmount(s.amount)
       ]),
       theme: 'striped',
       headStyles: { fillColor: [59, 130, 246] },
