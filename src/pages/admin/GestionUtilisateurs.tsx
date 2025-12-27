@@ -117,6 +117,7 @@ export default function GestionUtilisateurs() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [approvalFilter, setApprovalFilter] = useState<string>('all');
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -141,7 +142,7 @@ export default function GestionUtilisateurs() {
 
   useEffect(() => {
     filterUsers();
-  }, [users, searchTerm, roleFilter]);
+  }, [users, searchTerm, roleFilter, approvalFilter]);
 
   const fetchUsers = async () => {
     try {
@@ -204,6 +205,12 @@ export default function GestionUtilisateurs() {
 
     if (roleFilter !== 'all') {
       filtered = filtered.filter(u => u.role === roleFilter);
+    }
+
+    if (approvalFilter !== 'all') {
+      filtered = filtered.filter(u => 
+        approvalFilter === 'pending' ? !u.is_approved : u.is_approved
+      );
     }
 
     setFilteredUsers(filtered);
@@ -484,6 +491,16 @@ export default function GestionUtilisateurs() {
                     <SelectItem value="admin">Administrateur</SelectItem>
                     <SelectItem value="manager">Manager</SelectItem>
                     <SelectItem value="seller">Vendeur</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={approvalFilter} onValueChange={setApprovalFilter}>
+                  <SelectTrigger id="user-approval-filter" className="w-44">
+                    <SelectValue placeholder="Filtrer par statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="approved">Approuvés</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
