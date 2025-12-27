@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { Eye, EyeOff, Mail, Lock, LogIn, UserPlus, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useConnectionStatus } from '@/hooks/useConnectionStatus';
+import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -58,9 +59,9 @@ export default function AuthPage() {
 
     setIsLoading(true);
     const { error } = await signIn(data.email, data.password);
-    setIsLoading(false);
-
+    
     if (error) {
+      setIsLoading(false);
       if (error.message.includes('Invalid login credentials')) {
         toast.error('Email ou mot de passe incorrect');
       } else {
@@ -69,6 +70,24 @@ export default function AuthPage() {
       return;
     }
 
+    // Check if user is approved
+    const { data: { user: authUser } } = await supabase.auth.getUser();
+    if (authUser) {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('is_approved')
+        .eq('id', authUser.id)
+        .maybeSingle();
+
+      if (profile && !profile.is_approved) {
+        await supabase.auth.signOut();
+        setIsLoading(false);
+        toast.error('Votre compte n\'est pas encore approuvé. Veuillez contacter un administrateur.');
+        return;
+      }
+    }
+
+    setIsLoading(false);
     toast.success('Connexion réussie !');
     navigate('/');
   };

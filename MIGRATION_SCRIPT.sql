@@ -31,6 +31,9 @@ CREATE TABLE public.profiles (
     phone TEXT,
     avatar_url TEXT,
     boutique_id UUID REFERENCES public.boutiques(id),
+    is_approved BOOLEAN DEFAULT false,
+    approved_at TIMESTAMP WITH TIME ZONE,
+    approved_by UUID,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
     updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
@@ -266,12 +269,13 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  INSERT INTO public.profiles (id, email, first_name, last_name)
+  INSERT INTO public.profiles (id, email, first_name, last_name, is_approved)
   VALUES (
     NEW.id,
     NEW.email,
     NEW.raw_user_meta_data ->> 'first_name',
-    NEW.raw_user_meta_data ->> 'last_name'
+    NEW.raw_user_meta_data ->> 'last_name',
+    false
   );
   
   -- Default role is seller

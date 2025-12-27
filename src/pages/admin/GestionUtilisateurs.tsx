@@ -53,6 +53,10 @@ import {
   Phone,
   Store,
   Shield,
+  CheckCircle2,
+  XCircle,
+  KeyRound,
+  Loader2,
 } from 'lucide-react';
 import type { AppRole, Boutique } from '@/types';
 
@@ -65,6 +69,9 @@ interface UserProfile {
   boutique_id: string | null;
   boutiques: { name: string } | null;
   role: AppRole;
+  is_approved: boolean;
+  approved_at: string | null;
+  approved_by: string | null;
 }
 
 interface UserFormData {
@@ -116,6 +123,8 @@ export default function GestionUtilisateurs() {
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState<UserFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [approvingUserId, setApprovingUserId] = useState<string | null>(null);
+  const [sendingResetId, setSendingResetId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -161,6 +170,9 @@ export default function GestionUtilisateurs() {
         boutique_id: profile.boutique_id,
         boutiques: profile.boutiques,
         role: (roles?.find(r => r.user_id === profile.id)?.role as AppRole) || 'seller',
+        is_approved: profile.is_approved ?? false,
+        approved_at: profile.approved_at,
+        approved_by: profile.approved_by,
       }));
 
       setUsers(usersWithRoles);
@@ -376,6 +388,74 @@ export default function GestionUtilisateurs() {
     }
   };
 
+  const handleApproveUser = async (userToApprove: UserProfile, approve: boolean) => {
+    setApprovingUserId(userToApprove.id);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          is_approved: approve,
+          approved_at: approve ? new Date().toISOString() : null,
+          approved_by: approve ? user?.id : null,
+        })
+        .eq('id', userToApprove.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Succès',
+        description: approve 
+          ? `${userToApprove.first_name || userToApprove.email} a été approuvé`
+          : `L'approbation de ${userToApprove.first_name || userToApprove.email} a été retirée`,
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error approving user:', error);
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue',
+        variant: 'destructive',
+      });
+    } finally {
+      setApprovingUserId(null);
+    }
+  };
+
+  const handleSendPasswordReset = async (userToReset: UserProfile) => {
+    if (!userToReset.email) {
+      toast({
+        title: 'Erreur',
+        description: 'Cet utilisateur n\'a pas d\'email configuré',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSendingResetId(userToReset.id);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(userToReset.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Email envoyé',
+        description: `Un lien de réinitialisation a été envoyé à ${userToReset.email}`,
+      });
+    } catch (error: any) {
+      console.error('Error sending reset email:', error);
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue',
+        variant: 'destructive',
+      });
+    } finally {
+      setSendingResetId(null);
+    }
+  };
+
   return (
     <AppLayout title="Gestion des utilisateurs">
       <div className="space-y-6">
@@ -445,6 +525,7 @@ export default function GestionUtilisateurs() {
                       <TableHead>Téléphone</TableHead>
                       <TableHead>Boutique</TableHead>
                       <TableHead>Rôle</TableHead>
+                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -488,8 +569,57 @@ export default function GestionUtilisateurs() {
                             {roleLabels[u.role]}
                           </Badge>
                         </TableCell>
+                        <TableCell>
+                          {u.is_approved ? (
+                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                              <CheckCircle2 className="mr-1 h-3 w-3" />
+                              Approuvé
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
+                              <XCircle className="mr-1 h-3 w-3" />
+                              En attente
+                            </Badge>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
+                            {u.id !== user?.id && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-10 w-10"
+                                  onClick={() => handleApproveUser(u, !u.is_approved)}
+                                  disabled={approvingUserId === u.id}
+                                  title={u.is_approved ? 'Retirer l\'approbation' : 'Approuver'}
+                                  aria-label={u.is_approved ? 'Retirer l\'approbation' : 'Approuver'}
+                                >
+                                  {approvingUserId === u.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : u.is_approved ? (
+                                    <XCircle className="h-4 w-4 text-amber-600" />
+                                  ) : (
+                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-10 w-10"
+                                  onClick={() => handleSendPasswordReset(u)}
+                                  disabled={sendingResetId === u.id}
+                                  title="Envoyer un lien de réinitialisation"
+                                  aria-label="Envoyer un lien de réinitialisation"
+                                >
+                                  {sendingResetId === u.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <KeyRound className="h-4 w-4 text-blue-600" />
+                                  )}
+                                </Button>
+                              </>
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"
@@ -523,7 +653,7 @@ export default function GestionUtilisateurs() {
                     <Card key={u.id} className="p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-medium truncate">
                               {u.first_name || u.last_name
                                 ? `${u.first_name || ''} ${u.last_name || ''}`.trim()
@@ -533,6 +663,17 @@ export default function GestionUtilisateurs() {
                               <Shield className="mr-1 h-3 w-3" />
                               {roleLabels[u.role]}
                             </Badge>
+                            {u.is_approved ? (
+                              <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 shrink-0">
+                                <CheckCircle2 className="mr-1 h-3 w-3" />
+                                Approuvé
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 shrink-0">
+                                <XCircle className="mr-1 h-3 w-3" />
+                                En attente
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Mail className="h-3 w-3 shrink-0" />
@@ -552,6 +693,40 @@ export default function GestionUtilisateurs() {
                           )}
                         </div>
                         <div className="flex flex-col gap-1">
+                          {u.id !== user?.id && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-10 w-10"
+                                onClick={() => handleApproveUser(u, !u.is_approved)}
+                                disabled={approvingUserId === u.id}
+                                aria-label={u.is_approved ? 'Retirer l\'approbation' : 'Approuver'}
+                              >
+                                {approvingUserId === u.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : u.is_approved ? (
+                                  <XCircle className="h-4 w-4 text-amber-600" />
+                                ) : (
+                                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                )}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-10 w-10"
+                                onClick={() => handleSendPasswordReset(u)}
+                                disabled={sendingResetId === u.id}
+                                aria-label="Envoyer un lien de réinitialisation"
+                              >
+                                {sendingResetId === u.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <KeyRound className="h-4 w-4 text-blue-600" />
+                                )}
+                              </Button>
+                            </>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"
