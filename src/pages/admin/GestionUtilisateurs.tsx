@@ -53,8 +53,10 @@ import {
   Phone,
   Store,
   Shield,
-  CheckCircle,
+  CheckCircle2,
   XCircle,
+  KeyRound,
+  Loader2,
 } from 'lucide-react';
 import type { AppRole, Boutique } from '@/types';
 
@@ -115,12 +117,15 @@ export default function GestionUtilisateurs() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
+  const [approvalFilter, setApprovalFilter] = useState<string>('all');
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<UserProfile | null>(null);
   const [formData, setFormData] = useState<UserFormData>(initialFormData);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [approvingUserId, setApprovingUserId] = useState<string | null>(null);
+  const [sendingResetId, setSendingResetId] = useState<string | null>(null);
 
   useEffect(() => {
     if (user?.role !== 'admin') {
@@ -137,7 +142,7 @@ export default function GestionUtilisateurs() {
 
   useEffect(() => {
     filterUsers();
-  }, [users, searchTerm, roleFilter]);
+  }, [users, searchTerm, roleFilter, approvalFilter]);
 
   const fetchUsers = async () => {
     try {
@@ -200,6 +205,12 @@ export default function GestionUtilisateurs() {
 
     if (roleFilter !== 'all') {
       filtered = filtered.filter(u => u.role === roleFilter);
+    }
+
+    if (approvalFilter !== 'all') {
+      filtered = filtered.filter(u => 
+        approvalFilter === 'pending' ? !u.is_approved : u.is_approved
+      );
     }
 
     setFilteredUsers(filtered);
@@ -448,6 +459,74 @@ export default function GestionUtilisateurs() {
     }
   };
 
+  const handleApproveUser = async (userToApprove: UserProfile, approve: boolean) => {
+    setApprovingUserId(userToApprove.id);
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          is_approved: approve,
+          approved_at: approve ? new Date().toISOString() : null,
+          approved_by: approve ? user?.id : null,
+        })
+        .eq('id', userToApprove.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Succès',
+        description: approve 
+          ? `${userToApprove.first_name || userToApprove.email} a été approuvé`
+          : `L'approbation de ${userToApprove.first_name || userToApprove.email} a été retirée`,
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error approving user:', error);
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue',
+        variant: 'destructive',
+      });
+    } finally {
+      setApprovingUserId(null);
+    }
+  };
+
+  const handleSendPasswordReset = async (userToReset: UserProfile) => {
+    if (!userToReset.email) {
+      toast({
+        title: 'Erreur',
+        description: 'Cet utilisateur n\'a pas d\'email configuré',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setSendingResetId(userToReset.id);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(userToReset.email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Email envoyé',
+        description: `Un lien de réinitialisation a été envoyé à ${userToReset.email}`,
+      });
+    } catch (error: any) {
+      console.error('Error sending reset email:', error);
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue',
+        variant: 'destructive',
+      });
+    } finally {
+      setSendingResetId(null);
+    }
+  };
+
   return (
     <AppLayout title="Gestion des utilisateurs">
       <div className="space-y-6">
@@ -476,6 +555,16 @@ export default function GestionUtilisateurs() {
                     <SelectItem value="admin">Administrateur</SelectItem>
                     <SelectItem value="manager">Manager</SelectItem>
                     <SelectItem value="seller">Vendeur</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={approvalFilter} onValueChange={setApprovalFilter}>
+                  <SelectTrigger id="user-approval-filter" className="w-44">
+                    <SelectValue placeholder="Filtrer par statut" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Tous les statuts</SelectItem>
+                    <SelectItem value="pending">En attente</SelectItem>
+                    <SelectItem value="approved">Approuvés</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -562,46 +651,56 @@ export default function GestionUtilisateurs() {
                           </Badge>
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-2">
-                            <Badge variant={u.is_approved ? "default" : "destructive"}>
-                              {u.is_approved ? (
-                                <>
-                                  <CheckCircle className="mr-1 h-3 w-3" />
-                                  Approuvé
-                                </>
-                              ) : (
-                                <>
-                                  <XCircle className="mr-1 h-3 w-3" />
-                                  En attente
-                                </>
-                              )}
+                          {u.is_approved ? (
+                            <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400">
+                              <CheckCircle2 className="mr-1 h-3 w-3" />
+                              Approuvé
                             </Badge>
-                            {!u.is_approved && (
-                              <div className="flex gap-1">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 px-2"
-                                  onClick={() => handleApproveUser(u)}
-                                  aria-label={`Approuver ${u.first_name || ''} ${u.last_name || u.email}`}
-                                >
-                                  <CheckCircle className="h-3 w-3 text-green-600" />
-                                </Button>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 px-2"
-                                  onClick={() => handleRejectUser(u)}
-                                  aria-label={`Rejeter ${u.first_name || ''} ${u.last_name || u.email}`}
-                                >
-                                  <XCircle className="h-3 w-3 text-red-600" />
-                                </Button>
-                              </div>
-                            )}
-                          </div>
+                          ) : (
+                            <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
+                              <XCircle className="mr-1 h-3 w-3" />
+                              En attente
+                            </Badge>
+                          )}
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
+                            {u.id !== user?.id && (
+                              <>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-10 w-10"
+                                  onClick={() => handleApproveUser(u, !u.is_approved)}
+                                  disabled={approvingUserId === u.id}
+                                  title={u.is_approved ? 'Retirer l\'approbation' : 'Approuver'}
+                                  aria-label={u.is_approved ? 'Retirer l\'approbation' : 'Approuver'}
+                                >
+                                  {approvingUserId === u.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : u.is_approved ? (
+                                    <XCircle className="h-4 w-4 text-amber-600" />
+                                  ) : (
+                                    <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                  )}
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-10 w-10"
+                                  onClick={() => handleSendPasswordReset(u)}
+                                  disabled={sendingResetId === u.id}
+                                  title="Envoyer un lien de réinitialisation"
+                                  aria-label="Envoyer un lien de réinitialisation"
+                                >
+                                  {sendingResetId === u.id ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                  ) : (
+                                    <KeyRound className="h-4 w-4 text-blue-600" />
+                                  )}
+                                </Button>
+                              </>
+                            )}
                             <Button
                               variant="ghost"
                               size="icon"
@@ -635,7 +734,7 @@ export default function GestionUtilisateurs() {
                     <Card key={u.id} className="p-4">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0 space-y-2">
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-2 flex-wrap">
                             <p className="font-medium truncate">
                               {u.first_name || u.last_name
                                 ? `${u.first_name || ''} ${u.last_name || ''}`.trim()
@@ -645,6 +744,17 @@ export default function GestionUtilisateurs() {
                               <Shield className="mr-1 h-3 w-3" />
                               {roleLabels[u.role]}
                             </Badge>
+                            {u.is_approved ? (
+                              <Badge className="bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400 shrink-0">
+                                <CheckCircle2 className="mr-1 h-3 w-3" />
+                                Approuvé
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-amber-100 text-amber-800 dark:bg-amber-900/20 dark:text-amber-400 shrink-0">
+                                <XCircle className="mr-1 h-3 w-3" />
+                                En attente
+                              </Badge>
+                            )}
                           </div>
                           <div className="flex items-center gap-2 text-sm text-muted-foreground">
                             <Mail className="h-3 w-3 shrink-0" />
@@ -664,6 +774,40 @@ export default function GestionUtilisateurs() {
                           )}
                         </div>
                         <div className="flex flex-col gap-1">
+                          {u.id !== user?.id && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-10 w-10"
+                                onClick={() => handleApproveUser(u, !u.is_approved)}
+                                disabled={approvingUserId === u.id}
+                                aria-label={u.is_approved ? 'Retirer l\'approbation' : 'Approuver'}
+                              >
+                                {approvingUserId === u.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : u.is_approved ? (
+                                  <XCircle className="h-4 w-4 text-amber-600" />
+                                ) : (
+                                  <CheckCircle2 className="h-4 w-4 text-green-600" />
+                                )}
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-10 w-10"
+                                onClick={() => handleSendPasswordReset(u)}
+                                disabled={sendingResetId === u.id}
+                                aria-label="Envoyer un lien de réinitialisation"
+                              >
+                                {sendingResetId === u.id ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <KeyRound className="h-4 w-4 text-blue-600" />
+                                )}
+                              </Button>
+                            </>
+                          )}
                           <Button
                             variant="ghost"
                             size="icon"

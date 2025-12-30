@@ -204,7 +204,7 @@ export type Database = {
           email: string | null
           first_name: string | null
           id: string
-          is_approved: boolean
+          is_approved: boolean | null
           last_name: string | null
           phone: string | null
           updated_at: string
@@ -218,7 +218,7 @@ export type Database = {
           email?: string | null
           first_name?: string | null
           id: string
-          is_approved?: boolean
+          is_approved?: boolean | null
           last_name?: string | null
           phone?: string | null
           updated_at?: string
@@ -232,7 +232,7 @@ export type Database = {
           email?: string | null
           first_name?: string | null
           id?: string
-          is_approved?: boolean
+          is_approved?: boolean | null
           last_name?: string | null
           phone?: string | null
           updated_at?: string

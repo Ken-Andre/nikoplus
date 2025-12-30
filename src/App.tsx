@@ -10,6 +10,7 @@ import { CartProvider } from "@/hooks/useCart";
 import { useSyncQueue } from "@/hooks/useSyncQueue";
 import { useOfflineCache } from "@/hooks/useOfflineCache";
 import AuthPage from "./pages/AuthPage";
+import ResetPasswordPage from "./pages/ResetPasswordPage";
 import VendeurAccueil from "./pages/vendeur/VendeurAccueil";
 import NouvelleVente from "./pages/vendeur/NouvelleVente";
 import HistoriqueVentes from "./pages/vendeur/HistoriqueVentes";
@@ -53,10 +54,13 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function AppRoutes() {
-  const { user, isLoading } = useAuth();
+  const { user, isLoading, boutiques } = useAuth();
+  
+  // For admin without boutiqueId, use first available boutique for cache
+  const effectiveBoutiqueId = user?.boutiqueId || (boutiques.length > 0 ? boutiques[0].id : undefined);
   
   // Initialize cache and sync queue
-  const { isInitialized: cacheInitialized } = useOfflineCache(user?.boutiqueId);
+  const { isInitialized: cacheInitialized } = useOfflineCache(effectiveBoutiqueId);
   const { pendingCount } = useSyncQueue();
   
   // Log sync status
@@ -83,6 +87,7 @@ function AppRoutes() {
     <Routes>
       {/* Auth */}
       <Route path="/login" element={user ? <Navigate to="/" replace /> : <AuthPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
       
       {/* Default redirect based on role */}
       <Route
