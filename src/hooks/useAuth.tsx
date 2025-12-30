@@ -37,6 +37,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .select('role')
         .eq('user_id', supabaseUser.id);
 
+      // Check if user is approved (admins are always approved)
+      const isApproved = profile?.is_approved ?? false;
+      const isAdmin = rolesData?.some(r => r.role === 'admin') ?? false;
+
+      // If user is not approved and not an admin, don't allow login
+      if (!isApproved && !isAdmin) {
+        console.log('User not approved, signing out');
+        await supabase.auth.signOut();
+        setUser(null);
+        return;
+      }
+
       // Determine highest role (admin > manager > seller)
       const rolePriority: Record<string, number> = { admin: 3, manager: 2, seller: 1 };
       const highestRole = rolesData?.reduce((highest, current) => {

@@ -53,6 +53,8 @@ import {
   Phone,
   Store,
   Shield,
+  CheckCircle,
+  XCircle,
 } from 'lucide-react';
 import type { AppRole, Boutique } from '@/types';
 
@@ -65,6 +67,9 @@ interface UserProfile {
   boutique_id: string | null;
   boutiques: { name: string } | null;
   role: AppRole;
+  is_approved: boolean;
+  approved_at: string | null;
+  approved_by: string | null;
 }
 
 interface UserFormData {
@@ -161,6 +166,9 @@ export default function GestionUtilisateurs() {
         boutique_id: profile.boutique_id,
         boutiques: profile.boutiques,
         role: (roles?.find(r => r.user_id === profile.id)?.role as AppRole) || 'seller',
+        is_approved: profile.is_approved ?? false,
+        approved_at: profile.approved_at,
+        approved_by: profile.approved_by,
       }));
 
       setUsers(usersWithRoles);
@@ -289,12 +297,13 @@ export default function GestionUtilisateurs() {
         if (authError) throw authError;
 
         if (authData.user) {
-          // Update profile with additional data
+          // Update profile with additional data (new users are not approved by default)
           await supabase
             .from('profiles')
             .update({
               phone: formData.phone,
               boutique_id: formData.boutiqueId && formData.boutiqueId !== 'none' ? formData.boutiqueId : null,
+              is_approved: false, // New users need admin approval
             })
             .eq('id', authData.user.id);
 
@@ -326,6 +335,69 @@ export default function GestionUtilisateurs() {
       });
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleApproveUser = async (userToApprove: UserProfile) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({
+          is_approved: true,
+          approved_at: new Date().toISOString(),
+          approved_by: user?.id,
+        })
+        .eq('id', userToApprove.id);
+
+      if (error) throw error;
+
+      toast({
+        title: 'Succès',
+        description: `Utilisateur ${userToApprove.first_name || ''} ${userToApprove.last_name || userToApprove.email} approuvé`,
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error approving user:', error);
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue lors de l\'approbation',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const handleRejectUser = async (userToReject: UserProfile) => {
+    try {
+      // Instead of deleting, we could mark as rejected or delete
+      // For now, we'll delete the user account completely
+      const { error: roleError } = await supabase
+        .from('user_roles')
+        .delete()
+        .eq('user_id', userToReject.id);
+
+      if (roleError) throw roleError;
+
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('id', userToReject.id);
+
+      if (profileError) throw profileError;
+
+      toast({
+        title: 'Succès',
+        description: `Utilisateur ${userToReject.first_name || ''} ${userToReject.last_name || userToReject.email} rejeté et supprimé`,
+      });
+
+      fetchUsers();
+    } catch (error: any) {
+      console.error('Error rejecting user:', error);
+      toast({
+        title: 'Erreur',
+        description: error.message || 'Une erreur est survenue lors du rejet',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -445,6 +517,7 @@ export default function GestionUtilisateurs() {
                       <TableHead>Téléphone</TableHead>
                       <TableHead>Boutique</TableHead>
                       <TableHead>Rôle</TableHead>
+                      <TableHead>Statut</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -483,10 +556,49 @@ export default function GestionUtilisateurs() {
                           )}
                         </TableCell>
                         <TableCell>
-                          <Badge className={roleColors[u.role]}>
+                          <Badge variant="secondary" className={roleColors[u.role]}>
                             <Shield className="mr-1 h-3 w-3" />
                             {roleLabels[u.role]}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={u.is_approved ? "default" : "destructive"}>
+                              {u.is_approved ? (
+                                <>
+                                  <CheckCircle className="mr-1 h-3 w-3" />
+                                  Approuvé
+                                </>
+                              ) : (
+                                <>
+                                  <XCircle className="mr-1 h-3 w-3" />
+                                  En attente
+                                </>
+                              )}
+                            </Badge>
+                            {!u.is_approved && (
+                              <div className="flex gap-1">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 px-2"
+                                  onClick={() => handleApproveUser(u)}
+                                  aria-label={`Approuver ${u.first_name || ''} ${u.last_name || u.email}`}
+                                >
+                                  <CheckCircle className="h-3 w-3 text-green-600" />
+                                </Button>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 px-2"
+                                  onClick={() => handleRejectUser(u)}
+                                  aria-label={`Rejeter ${u.first_name || ''} ${u.last_name || u.email}`}
+                                >
+                                  <XCircle className="h-3 w-3 text-red-600" />
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
