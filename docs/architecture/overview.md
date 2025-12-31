@@ -45,7 +45,7 @@ graph TB
     end
 
     subgraph "INFRASTRUCTURE"
-        VERCEL[Vercel Hosting]
+        LOVABLE_CLOUD[Vercel Hosting]
         MONITORING[Sentry + Analytics]
     end
 
@@ -63,7 +63,7 @@ graph TB
     API --> REALTIME
     API --> FUNCTIONS
 
-    FRONTEND --> VERCEL
+    FRONTEND --> LOVABLE_CLOUD
     MONITORING --> FRONTEND
     MONITORING --> BACKEND
 ```
@@ -71,21 +71,25 @@ graph TB
 ### Principes Architecturaux
 
 #### **1. Simplicité First**
+
 - **Pas de backend personnalisé** : Utilisation de Supabase (BaaS) pour réduire la complexité
 - **Frontend pur** : Toute la logique métier côté client
 - **Serverless** : Pas de gestion de serveurs
 
 #### **2. Progressive Web App (PWA)**
+
 - **Mode hors ligne** : Fonctionnement sans connexion Internet
 - **Installation native** : Application installable sur mobile/desktop
 - **Performance** : Cache intelligent et lazy loading
 
 #### **3. Type Safety**
+
 - **TypeScript** partout pour éviter les bugs runtime
 - **Types générés** automatiquement depuis Supabase
 - **Validation stricte** des données
 
 #### **4. Évolutivité**
+
 - **Modularité** : Composants réutilisables
 - **Separation of Concerns** : Hooks, services, composants séparés
 - **State Management** : TanStack Query pour la gestion d'état serveur
@@ -96,17 +100,17 @@ graph TB
 
 ### Stack Technique
 
-| Technologie | Version | Rôle | Justification |
-|-------------|---------|------|---------------|
-| **React** | 18.x | Framework UI | Composants réutilisables, écosystème riche |
-| **TypeScript** | 5.x | Type Safety | Prévention des bugs, DX améliorée |
-| **Vite** | 5.x | Build Tool | Démarrage rapide, HMR ultra-rapide |
-| **Tailwind CSS** | 3.x | Styling | Utilitaire-first, responsive, performant |
-| **React Router** | 6.x | Routing | Navigation SPA fluide |
-| **TanStack Query** | 5.x | State Management | Cache intelligent, synchronisation serveur |
-| **Supabase JS** | 2.x | API Client | Client officiel, types générés |
-| **IndexedDB** | - | Cache local | Stockage hors ligne structuré |
-| **Vite PWA** | 1.x | PWA | Service Worker, manifest, offline |
+| Technologie        | Version | Rôle             | Justification                              |
+| ------------------ | ------- | ---------------- | ------------------------------------------ |
+| **React**          | 18.x    | Framework UI     | Composants réutilisables, écosystème riche |
+| **TypeScript**     | 5.x     | Type Safety      | Prévention des bugs, DX améliorée          |
+| **Vite**           | 5.x     | Build Tool       | Démarrage rapide, HMR ultra-rapide         |
+| **Tailwind CSS**   | 3.x     | Styling          | Utilitaire-first, responsive, performant   |
+| **React Router**   | 6.x     | Routing          | Navigation SPA fluide                      |
+| **TanStack Query** | 5.x     | State Management | Cache intelligent, synchronisation serveur |
+| **Supabase JS**    | 2.x     | API Client       | Client officiel, types générés             |
+| **IndexedDB**      | -       | Cache local      | Stockage hors ligne structuré              |
+| **Vite PWA**       | 1.x     | PWA              | Service Worker, manifest, offline          |
 
 ### Structure des Dossiers
 
@@ -215,6 +219,7 @@ graph TD
 ### Gestion d'État
 
 #### **1. TanStack Query (Données Serveur)**
+
 ```typescript
 // ✅ BON : Cache intelligent, synchronisation automatique
 const useVentes = (filters?: VenteFilters) => {
@@ -228,6 +233,7 @@ const useVentes = (filters?: VenteFilters) => {
 ```
 
 #### **2. React Context (État Global)**
+
 ```typescript
 // ✅ BON : Authentification, thème, synchronisation
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -242,6 +248,7 @@ export const useAuth = () => {
 ```
 
 #### **3. Local State (État Local)**
+
 ```typescript
 // ✅ BON : Formulaires, UI temporaire
 const [searchTerm, setSearchTerm] = useState('');
@@ -255,22 +262,26 @@ const [isLoading, setIsLoading] = useState(false);
 ### Services Supabase Utilisés
 
 #### **1. Authentication**
+
 - **Type** : Supabase Auth
 - **Méthode** : Email + Password
 - **JWT** : Tokens gérés automatiquement
 - **Sessions** : Persistées automatiquement
 
 #### **2. Database (PostgreSQL)**
+
 - **Tables** : 12 tables principales
 - **Rôles** : `admin`, `manager`, `seller`
 - **RLS** : Row Level Security activé
 - **Fonctions** : `decrement_stock()`, `has_role()`, `get_user_boutique()`
 
 #### **3. Storage**
+
 - **Utilisation** : PDFs tickets, images produits
 - **Politiques** : RLS par utilisateur/boutique
 
 #### **4. Realtime**
+
 - **Utilisation** : Synchronisation multi-boutiques
 - **Channels** : Par boutique pour les mises à jour
 
@@ -393,6 +404,7 @@ erDiagram
 ### Politiques RLS (Row Level Security)
 
 #### **Table `ventes`**
+
 ```sql
 -- Vendeurs voient uniquement leurs ventes
 CREATE POLICY "Vendeurs voient leurs ventes" ON ventes
@@ -417,6 +429,7 @@ FOR ALL USING (
 ```
 
 #### **Table `stocks`**
+
 ```sql
 -- Utilisateurs voient stocks de leur boutique uniquement
 CREATE POLICY "Stocks de sa boutique uniquement" ON stocks
@@ -428,6 +441,7 @@ FOR ALL USING (
 ### Fonctions PostgreSQL
 
 #### **decrement_stock()**
+
 ```sql
 CREATE OR REPLACE FUNCTION decrement_stock(
   _boutique_id TEXT,
@@ -498,6 +512,7 @@ graph TD
 ### Stratégie de Cache
 
 #### **1. Cache des Données Statiques**
+
 ```typescript
 // vite.config.ts
 export default defineConfig({
@@ -526,6 +541,7 @@ export default defineConfig({
 ```
 
 #### **2. Cache des Données Métier**
+
 ```typescript
 // lib/offlineStorage.ts
 export class OfflineStorage {
@@ -686,11 +702,13 @@ export const useSync = () => {
 ### Authentification
 
 #### **Supabase Auth**
+
 - **JWT Tokens** : Signés, expirent automatiquement
 - **Refresh Tokens** : Rotation automatique
 - **Session Management** : Persistance sécurisée
 
 #### **Politiques RLS**
+
 ```sql
 -- Exemple : Utilisateurs voient uniquement leurs boutiques
 ALTER TABLE ventes ENABLE ROW LEVEL SECURITY;
@@ -706,6 +724,7 @@ FOR ALL USING (
 ### Autorisation
 
 #### **Rôles Système**
+
 ```typescript
 // types/index.ts
 export type AppRole = 'admin' | 'manager' | 'seller';
@@ -730,11 +749,13 @@ export const useAuthorization = () => {
 ### Protection des Données
 
 #### **Chiffrement**
+
 - **En transit** : HTTPS obligatoire (Supabase)
 - **Au repos** : Chiffrement PostgreSQL
 - **Local** : IndexedDB non chiffré (données non sensibles)
 
 #### **Validation**
+
 ```typescript
 // DTOs avec validation
 import { z } from 'zod';
@@ -748,7 +769,7 @@ export const CreateVenteSchema = z.object({
     quantity: z.number().int().positive(),
     unitPrice: z.number().positive(),
   })).min(1),
-  paymentMethod: z.enum(['especes', 'carte', 'cheque', 'virement']),
+  paymentMethod: z.enum(['especes', 'carte', 'mobile_money', 'virement']),
 });
 
 export type CreateVenteDto = z.infer<typeof CreateVenteSchema>;
@@ -761,6 +782,7 @@ export type CreateVenteDto = z.infer<typeof CreateVenteSchema>;
 ### Optimisations Frontend
 
 #### **1. Code Splitting**
+
 ```typescript
 // Lazy loading des pages
 const AdminDashboard = lazy(() => import('@/pages/AdminDashboard'));
@@ -778,6 +800,7 @@ const NouvelleVente = lazy(() => import('@/pages/NouvelleVente'));
 ```
 
 #### **2. TanStack Query Cache**
+
 ```typescript
 // Configuration globale
 const queryClient = new QueryClient({
@@ -798,6 +821,7 @@ const queryClient = new QueryClient({
 ```
 
 #### **3. Virtual Scrolling**
+
 ```typescript
 // Pour listes longues
 import { FixedSizeList as List } from 'react-window';
@@ -823,6 +847,7 @@ const VenteList = ({ ventes }: { ventes: Vente[] }) => {
 ### Optimisations Base de Données
 
 #### **1. Indexes Stratégiques**
+
 ```sql
 -- Index pour recherches fréquentes
 CREATE INDEX idx_ventes_boutique_date ON ventes(boutique_id, created_at DESC);
@@ -831,6 +856,7 @@ CREATE INDEX idx_alertes_boutique_resolve ON alertes(boutique_id, is_resolved) W
 ```
 
 #### **2. Requêtes Optimisées**
+
 ```typescript
 // ✅ BON : Jointures optimisées côté Supabase
 export const getVentesWithDetails = async (boutiqueId: string) => {
@@ -851,15 +877,15 @@ export const getVentesWithDetails = async (boutiqueId: string) => {
 };
 ```
 
-### Métriques Performance Cibles
+### Métriques Performance Cibles (Objectif)
 
-| Métrique | Cible | Mesure |
-|----------|-------|--------|
-| **First Contentful Paint** | < 1.5s | Lighthouse |
-| **Time to Interactive** | < 3s | Lighthouse |
-| **Bundle Size** | < 500KB | Vite Build |
-| **API Response Time** | < 500ms | Supabase Analytics |
-| **Offline First Load** | < 2s | PWA Testing |
+| Métrique                   | Cible   | Mesure             |
+| -------------------------- | ------- | ------------------ |
+| **First Contentful Paint** | < 1.5s  | Lighthouse         |
+| **Time to Interactive**    | < 3s    | Lighthouse         |
+| **Bundle Size**            | < 500KB | Vite Build         |
+| **API Response Time**      | < 500ms | Supabase Analytics |
+| **Offline First Load**     | < 2s    | PWA Testing        |
 
 ---
 
