@@ -349,34 +349,6 @@ export default function GestionUtilisateurs() {
     }
   };
 
-  const handleApproveUser = async (userToApprove: UserProfile) => {
-    try {
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          is_approved: true,
-          approved_at: new Date().toISOString(),
-          approved_by: user?.id,
-        })
-        .eq('id', userToApprove.id);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Succès',
-        description: `Utilisateur ${userToApprove.first_name || ''} ${userToApprove.last_name || userToApprove.email} approuvé`,
-      });
-
-      fetchUsers();
-    } catch (error: any) {
-      console.error('Error approving user:', error);
-      toast({
-        title: 'Erreur',
-        description: error.message || 'Une erreur est survenue lors de l\'approbation',
-        variant: 'destructive',
-      });
-    }
-  };
 
   const handleRejectUser = async (userToReject: UserProfile) => {
     try {
