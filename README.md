@@ -28,6 +28,7 @@
 ### Contexte
 
 Les boutiques Nicko (Douala et Kribi) géraient manuellement leurs ventes et stocks, entraînant :
+
 - ❌ Erreurs de stock fréquentes
 - ❌ Perte de temps considérable
 - ❌ Absence de traçabilité
@@ -36,6 +37,7 @@ Les boutiques Nicko (Douala et Kribi) géraient manuellement leurs ventes et sto
 ### Solution
 
 NICKOPLUS PRO apporte :
+
 - ✅ Enregistrement rapide des ventes (< 2 min)
 - ✅ Gestion automatisée des stocks
 - ✅ Synchronisation temps réel entre boutiques
@@ -47,30 +49,35 @@ NICKOPLUS PRO apporte :
 ## 🚀 Fonctionnalités Principales
 
 ### 💰 Module Ventes
+
 - Enregistrement rapide de ventes
 - Génération automatique de tickets (PDF)
 - Historique complet avec filtres
 - Support mode hors ligne
 
 ### 📦 Module Stocks
+
 - Consultation en temps réel par boutique
 - Alertes automatiques de rupture de stock
 - Mise à jour automatique après vente
 - Gestion des catégories de produits
 
 ### 🔄 Synchronisation Multi-Boutiques
+
 - Synchronisation automatique toutes les 5 minutes
 - Résolution intelligente de conflits
 - Cache local avec IndexedDB
 - Détection automatique de perte de connexion
 
 ### 📊 Dashboard Administrateur
+
 - KPIs temps réel (ventes, recettes, stocks)
 - Graphiques de performance (7 jours, mois, année)
 - Rapports exportables (PDF, Excel)
 - Gestion utilisateurs et fournisseurs
 
 ### 🏢 Module Fournisseurs
+
 - CRUD complet des fournisseurs
 - Création et suivi de commandes
 - Historique des livraisons
@@ -83,6 +90,7 @@ NICKOPLUS PRO apporte :
 ### Stack Technique
 
 #### **Frontend**
+
 - **Framework** : React 18+ avec Next.js 14+ (App Router)
 - **Styling** : Tailwind CSS 3+
 - **PWA** : Service Worker + IndexedDB
@@ -91,12 +99,14 @@ NICKOPLUS PRO apporte :
 - **Déploiement** : Vercel (gratuit)
 
 #### **Base de Données**
+
 - **Plateforme** : Supabase (PostgreSQL serverless)
 - **Authentification** : Supabase Auth (JWT)
 - **Realtime** : Synchronisation temps réel
 - **Stockage** : Supabase Storage (images, PDFs)
 
 #### **DevOps**
+
 - **Version Control** : Git + GitHub
 - **CI/CD** : GitHub Actions
 - **Cache hors ligne** : IndexedDB (idb-keyval)
@@ -164,7 +174,7 @@ VITE_SUPABASE_PUBLISHABLE_KEY=your-supabase-key
 npm run dev
 ```
 
-L'application sera accessible sur **http://localhost:5173**
+L/'application sera accessible sur **http://localhost:5173**
 
 ### Configuration Supabase
 
@@ -181,6 +191,7 @@ L'application sera accessible sur **http://localhost:5173**
 ### Connexion Initiale
 
 **Compte administrateur par défaut :**
+
 - **Email** : `admin@nickoplus.com`
 - **Mot de passe** : `Admin@2025`
 
@@ -192,30 +203,30 @@ L'application sera accessible sur **http://localhost:5173**
 
 ### Documentation Développeur
 
-| Document | Description | Lien |
-|----------|-------------|------|
-| **Contributing Guide** | Comment contribuer au projet | [CONTRIBUTING.md](CONTRIBUTING.md) |
-| **Architecture Détaillée** | Choix techniques, patterns, diagrammes | [docs/architecture/](docs/architecture/) |
-| **API Documentation** | Référence complète des appels Supabase | [docs/api/](docs/api/) |
-| **Coding Standards** | Conventions de code, linting | [docs/development/coding-standards.md](docs/development/) |
-| **Testing Guide** | Stratégie de tests, frameworks | [docs/development/testing.md](docs/development/) |
+| Document                   | Description                            | Lien                                                      |
+| -------------------------- | -------------------------------------- | --------------------------------------------------------- |
+| **Contributing Guide**     | Comment contribuer au projet           | [CONTRIBUTING.md](CONTRIBUTING.md)                        |
+| **Architecture Détaillée** | Choix techniques, patterns, diagrammes | [docs/architecture/](docs/architecture/)                  |
+| **API Documentation**      | Référence complète des appels Supabase | [docs/api/](docs/api/)                                    |
+| **Coding Standards**       | Conventions de code, linting           | [docs/development/coding-standards.md](docs/development/) |
+| **Testing Guide**          | Stratégie de tests, frameworks         | [docs/development/testing.md](docs/development/)          |
 
 ### Documentation Utilisateur
 
-| Document | Public | Lien |
-|----------|--------|------|
-| **Guide Vendeur** | Vendeuses (ventes quotidiennes) | [docs/user-guides/vendeur.md](docs/user-guides/) |
-| **Guide Gérante** | Gérante (pilotage, décisions) | [docs/user-guides/gerante.md](docs/user-guides/) |
-| **Guide Admin Système** | Admin IT (déploiement, maintenance) | [docs/operations/](docs/operations/) |
+| Document                | Public                              | Lien                                             |
+| ----------------------- | ----------------------------------- | ------------------------------------------------ |
+| **Guide Vendeur**       | Vendeuses (ventes quotidiennes)     | [docs/user-guides/vendeur.md](docs/user-guides/) |
+| **Guide Gérante**       | Gérante (pilotage, décisions)       | [docs/user-guides/gerante.md](docs/user-guides/) |
+| **Guide Admin Système** | Admin IT (déploiement, maintenance) | [docs/operations/](docs/operations/)             |
 
 ### Documentation Technique
 
-| Document | Description | Lien |
-|----------|-------------|------|
-| **Analyse Critique** | Évaluation documentation existante | [docs/README.md](docs/README.md) |
-| **SFD** | Spécifications Fonctionnelles Détaillées | [docs/specifications/SFD.md](docs/specifications/) |
-| **Contrat d'Interface API** | Contrat Frontend ↔ Supabase | [docs/api/contract.md](docs/api/) |
-| **Matrice de Traçabilité** | Exigences → User Stories → Tests | [docs/specifications/traceability-matrix.md](docs/specifications/) |
+| Document                    | Description                              | Lien                                                               |
+| --------------------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| **Analyse Critique**        | Évaluation documentation existante       | [docs/README.md](docs/README.md)                                   |
+| **SFD**                     | Spécifications Fonctionnelles Détaillées | [docs/specifications/SFD.md](docs/specifications/)                 |
+| **Contrat d'Interface API** | Contrat Frontend ↔ Supabase              | [docs/api/contract.md](docs/api/)                                  |
+| **Matrice de Traçabilité**  | Exigences → User Stories → Tests         | [docs/specifications/traceability-matrix.md](docs/specifications/) |
 
 ---
 
@@ -289,17 +300,17 @@ git push origin feature/ma-nouvelle-fonctionnalite
 
 ### Équipe de Développement
 
-| Rôle | Nom | Responsabilités | Contact |
-|------|-----|-----------------|---------|
-| **Chef de Projet** | Kenmogne | Coordination, planification, client | kenmogne@example.com |
-| **Lead Frontend** | [Nom] | Architecture React, UI/UX, Supabase | frontend@example.com |
-| **DevOps** | [Nom] | CI/CD, déploiement, monitoring | devops@example.com |
-| **QA Lead** | [Nom] | Tests, assurance qualité | qa@example.com |
+| Rôle               | Nom              | Responsabilités                     | Contact                         |
+| ------------------ | ---------------- | ----------------------------------- | ------------------------------- |
+| **Chef de Projet** | Kenmogne         | Coordination, planification, client | andre.kenmogne@2026.icam.fr     |
+| **Lead Frontend**  | Bedian, Kenmogne | Architecture React, UI/UX, Supabase | isaac.bedian@2026.ucac-icam.com |
+| **DevOps**         | Kogne Verra      | CI/CD, déploiement, monitoring      | verra.kogne@2026.ucac-icam.com  |
+| **QA Lead**        | Kamdem           | Tests, assurance qualité            | kamdem@2026.ucac-icam.com       |
 
 ### Superviseur Académique
 
-- **Nom** : [Nom du superviseur]
-- **Institution** : [Université/École]
+- **Nom** : Igor Ewolo
+- **Institution** : Ucac-Icam
 - **Email** : superviseur@university.edu
 
 ### Client
@@ -312,16 +323,16 @@ git push origin feature/ma-nouvelle-fonctionnalite
 
 ## 🆘 Support
 
-### Besoin d'Aide ?
+### Besoin d/'Aide ?
 
-- 📖 **Documentation** : Consultez d'abord la [documentation complète](docs/)
-- 💬 **Discussions** : Posez vos questions dans les [GitHub Discussions](https://github.com/votre-org/nickoplus-pro/discussions)
-- 🐛 **Bug Report** : Signalez un bug via [GitHub Issues](https://github.com/votre-org/nickoplus-pro/issues)
-- 💡 **Feature Request** : Proposez une fonctionnalité via [GitHub Issues](https://github.com/votre-org/nickoplus-pro/issues)
+- 📖 **Documentation** : Consultez d/'abord la [documentation complète](docs/)
+- 💬 **Discussions** : Posez vos questions dans les [GitHub Discussions](https://github.com/ken-andre/nickoplus-pro/discussions)
+- 🐛 **Bug Report** : Signalez un bug via [GitHub Issues](https://github.com/ken-andre/nickoplus-pro/issues)
+- 💡 **Feature Request** : Proposez une fonctionnalité via [GitHub Issues](https://github.com/ken-andre/nickoplus-pro/issues)
 
 ### Canaux de Communication
 
-- **Slack** : [#nickoplus-pro](https://votre-workspace.slack.com/archives/nickoplus-pro)
+- **Whatsapp** : [#nickoplus-pro](https://chat.whatsapp.com/BekICqb5lD04J6L3wGnD39)
 - **Email Équipe** : team@nickoplus-project.com
 - **Réunions Hebdomadaires** : Tous les lundis 10h (Google Meet)
 
@@ -333,18 +344,18 @@ git push origin feature/ma-nouvelle-fonctionnalite
 
 - [x] **Sprint 1-2** : Authentification + Base de données
 - [x] **Sprint 3-4** : Module Ventes + Stocks
-- [ ] **Sprint 5** : Mode Hors Ligne + Synchronisation
-- [ ] **Sprint 6** : Dashboard + Fournisseurs
+- [-] **Sprint 5** : Mode Hors Ligne + Synchronisation
+- [-] **Sprint 6** : Dashboard + Fournisseurs
 - [ ] **Sprint 7** : Tests finaux + Déploiement
 
 ### Métriques Actuelles
 
-| Métrique | Valeur | Cible |
-|----------|--------|-------|
-| **Tests Coverage** | 68% | ≥ 70% |
-| **Bugs Ouverts** | 5 | < 10 |
-| **Performance (Lighthouse)** | 88 | ≥ 90 |
-| **Disponibilité** | 99.2% | ≥ 99% |
+| Métrique                     | Valeur | Cible |
+| ---------------------------- | ------ | ----- |
+| **Tests Coverage**           | 68%    | ≥ 70% |
+| **Bugs Ouverts**             | 5      | < 10  |
+| **Performance (Lighthouse)** | 88     | ≥ 90  |
+| **Disponibilité**            | 99.2%  | ≥ 99% |
 
 ---
 
@@ -359,7 +370,7 @@ Ce projet est sous licence **MIT**. Voir [LICENSE](LICENSE) pour plus de détail
 - **Boutiques Nicko** pour la confiance accordée
 - **Superviseur académique** pour l'encadrement
 - **Communautés Open Source** : React, Supabase, Tailwind CSS
-- **Outils gratuits** : Vercel, Supabase, GitHub
+- **Outils gratuits** : Lovable Cloud, Supabase, GitHub
 
 ---
 
@@ -367,8 +378,8 @@ Ce projet est sous licence **MIT**. Voir [LICENSE](LICENSE) pour plus de détail
 
 **Projet NICKOPLUS PRO**  
 📧 Email : contact@nickoplus-project.com  
-🌐 Site : https://nickoplus.app  
-📱 GitHub : [@nickoplus-pro](https://github.com/votre-org/nickoplus-pro)
+🌐 Site : https://nickoplus.lovable.app  
+📱 GitHub : [@nickoplus-pro](https://github.com/ken-andre/nickoplus)
 
 ---
 
