@@ -9,6 +9,8 @@ import { ConnectionProvider } from "@/hooks/useConnectionStatus";
 import { CartProvider } from "@/hooks/useCart";
 import { useSyncQueue } from "@/hooks/useSyncQueue";
 import { useOfflineCache } from "@/hooks/useOfflineCache";
+import { PWAUpdatePrompt } from "@/components/PWAUpdatePrompt";
+import { InstallPWAPrompt } from "@/components/InstallPWAPrompt";
 import AuthPage from "./pages/AuthPage";
 import ResetPasswordPage from "./pages/ResetPasswordPage";
 import VendeurAccueil from "./pages/vendeur/VendeurAccueil";
@@ -292,6 +294,8 @@ const App = () => (
             <BrowserRouter>
               <AppRoutes />
             </BrowserRouter>
+            <PWAUpdatePrompt />
+            <InstallPWAPrompt />
           </TooltipProvider>
         </CartProvider>
       </AuthProvider>

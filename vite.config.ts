@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => ({
     react(),
     mode === "development" && componentTagger(),
     VitePWA({
-      registerType: "autoUpdate",
+      registerType: "prompt",
       includeAssets: ["favicon.ico", "robots.txt"],
       manifest: {
         name: "NICKOPLUS PRO - Gestion Commerciale",
@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
         theme_color: "#3b82f6",
         background_color: "#ffffff",
         display: "standalone",
-        orientation: "portrait",
+        orientation: "any",
         start_url: "/",
         scope: "/",
         icons: [
@@ -46,9 +46,21 @@ export default defineConfig(({ mode }) => ({
         ],
         categories: ["business", "finance", "productivity"],
         lang: "fr",
+        display_override: ["window-controls-overlay", "standalone", "minimal-ui"],
+        screenshots: [
+          {
+            src: "/og-image.png",
+            sizes: "1200x630",
+            type: "image/png",
+            form_factor: "wide",
+            label: "NICKOPLUS PRO Dashboard",
+          },
+        ],
       },
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,woff2}"],
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/.*supabase\.co\/rest\/v1\/.*/i,
