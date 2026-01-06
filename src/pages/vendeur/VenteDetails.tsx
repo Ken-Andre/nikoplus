@@ -138,13 +138,15 @@ export default function VenteDetails() {
         const { data: stockData } = await supabase
           .from('stock')
           .select('id, quantity')
-          .eq('product_id', item.id)
+          .eq('product_id', item.product_id)
           .maybeSingle();
 
         if (stockData) {
+          // Explicit Number() conversion to avoid string concatenation
+          const newQuantity = Number(stockData.quantity) + Number(item.quantity);
           await supabase
             .from('stock')
-            .update({ quantity: stockData.quantity + item.quantity })
+            .update({ quantity: newQuantity })
             .eq('id', stockData.id);
         }
       }

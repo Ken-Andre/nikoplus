@@ -27,7 +27,10 @@ import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   adjustmentType: z.enum(['set', 'add', 'subtract']),
-  quantity: z.coerce.number().int().min(0, 'La quantité doit être positive'),
+  quantity: z.preprocess(
+    (val) => (val === '' || val === undefined ? 0 : Number(val)),
+    z.number().int().min(0, 'La quantité doit être positive')
+  ),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -62,12 +65,14 @@ export default function StockAdjustmentForm({
 
   // Calculate new quantity based on adjustment type
   const getNewQuantity = (): number => {
-    const qty = inputQuantity || 0;
+    // Explicit conversion to avoid string concatenation
+    const qty = Number(inputQuantity) || 0;
+    const current = Number(currentQuantity) || 0;
     switch (adjustmentType) {
       case 'add':
-        return currentQuantity + qty;
+        return current + qty;
       case 'subtract':
-        return Math.max(0, currentQuantity - qty);
+        return Math.max(0, current - qty);
       case 'set':
       default:
         return qty;

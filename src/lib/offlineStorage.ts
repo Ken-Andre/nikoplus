@@ -186,7 +186,8 @@ export async function updateCachedStock(productId: string, boutiqueId: string, q
   const key = `${productId}_${boutiqueId}`;
   const cached = await get<CachedStock>(key, stockCacheStore);
   if (cached) {
-    cached.quantity = Math.max(0, cached.quantity + quantityDelta);
+    // Explicit Number() conversion to avoid string concatenation
+    cached.quantity = Math.max(0, Number(cached.quantity) + Number(quantityDelta));
     cached.cachedAt = Date.now();
     await set(key, cached, stockCacheStore);
   }
