@@ -120,16 +120,13 @@ export default function ParametresSysteme() {
       }).eq('key', key);
       if (error) throw error;
 
-      // Log the action
-      await supabase.from('audit_logs').insert({
-        user_id: user?.id,
-        user_email: user?.email,
-        action: 'UPDATE_SETTINGS',
-        table_name: 'app_settings',
-        new_values: {
-          key,
-          value
-        }
+      // Log the action via SECURITY DEFINER function
+      await supabase.rpc('insert_audit_log', {
+        _user_id: user?.id,
+        _user_email: user?.email || '',
+        _action: 'UPDATE_SETTINGS',
+        _table_name: 'app_settings',
+        _new_values: { key, value }
       });
       toast.success('Paramètres enregistrés');
       fetchAuditLogs();
