@@ -598,6 +598,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      insert_audit_log: {
+        Args: {
+          _action: string
+          _new_values?: Json
+          _old_values?: Json
+          _record_id?: string
+          _table_name?: string
+          _user_email: string
+          _user_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       app_role: "admin" | "manager" | "seller"
