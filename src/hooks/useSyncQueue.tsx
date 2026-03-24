@@ -33,7 +33,7 @@ export function useSyncQueue() {
   });
   
   const syncInProgress = useRef(false);
-  const backupIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const backupIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   // Update pending count
   const updatePendingCount = useCallback(async () => {
